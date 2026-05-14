@@ -11,6 +11,10 @@ apps/
   ios/
     CalculetteFiscale.xcodeproj/
     CalculetteFiscale/
+      Sources/
+        Domain/
+        State/
+        Views/
     CalculetteFiscaleTests/
 docs/
   product-note-calculette-fiscale.md
@@ -32,6 +36,9 @@ Espaces prevus plus tard :
 - Langue V1 : francais
 - UI : SwiftUI
 - Cible minimum : iOS 17
+- Domaine : calculs deterministes dans `Sources/Domain`, constantes fiscales versionnees avec le jeu de regles `fr-2026-v1-2026-05-14`
+- Etat local : `Sources/State`, historique encode en JSON dans `UserDefaults`, limite aux 50 derniers calculs
+- Donnees : aucun backend et aucun envoi de montant ou de profil
 
 Build local :
 
@@ -57,3 +64,17 @@ xcodebuild -project apps/ios/CalculetteFiscale.xcodeproj -scheme CalculetteFisca
 - Prix V1 Pro : 9,99 euros en achat unique.
 - Confidentialite : calculs locaux, pas de backend.
 - Repository : monorepo, extensible vers Android, Mac et web.
+
+## V1 iOS
+
+Modes livres :
+
+- TVA : HT vers TTC, TTC vers HT, TVA seule, taux 20 %, 10 %, 5,5 %, 2,1 % et taux personnalise.
+- Independant : micro-BIC vente, micro-BIC prestation, micro-BNC prestation regime general, franchise en base, versement liberatoire, detail TVA, cotisations et net estime.
+- Objectif net : estimation du montant HT et TTC a facturer pour garder un montant cible.
+- Marge : achat HT/TTC, vente HT/TTC, marge brute, taux de marge, taux de marque, TVA collectee, TVA deductible et TVA nette.
+
+Limites V1 :
+
+- Pas d'ACRE, CFE, IR progressif, Cipav, SASU, EURL, DOM, Corse, activites mixtes ou optimisation fiscale.
+- Les resultats fiscaux sont des estimations indicatives. Ils ne remplacent pas une declaration officielle ni un conseil adapte.
