@@ -151,6 +151,18 @@ private struct HeaderBar: View {
     let isPro: Bool
     let historyCount: Int
 
+    private var historyButtonTitle: String {
+        isPro ? "\(historyCount)" : "Version Pro"
+    }
+
+    private var historyButtonImage: String {
+        isPro ? "clock.arrow.circlepath" : "lock.fill"
+    }
+
+    private var historyButtonMinWidth: CGFloat {
+        isPro ? 56 : 118
+    }
+
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
@@ -163,12 +175,15 @@ private struct HeaderBar: View {
 
             Button(action: onHistory) {
                 Label(
-                    isPro ? "\(historyCount)" : "Pro",
-                    systemImage: isPro ? "clock.arrow.circlepath" : "lock.fill"
+                    historyButtonTitle,
+                    systemImage: historyButtonImage
                 )
                     .labelStyle(.titleAndIcon)
                     .font(.system(size: 14, weight: .semibold))
-                    .frame(minWidth: 56, minHeight: 44)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.92)
+                    .padding(.horizontal, isPro ? 12 : 14)
+                    .frame(minWidth: historyButtonMinWidth, minHeight: 44)
                     .background(Color.white.opacity(0.12))
                     .clipShape(Capsule())
             }
@@ -195,7 +210,7 @@ private struct ModeSelector: View {
                     }
                 } label: {
                     HStack(spacing: 3) {
-                        Text(mode.rawValue)
+                        Text(mode.displayTitle)
                             .lineLimit(1)
                             .minimumScaleFactor(0.68)
 
@@ -212,7 +227,7 @@ private struct ModeSelector: View {
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(mode.requiresPro && !isPro ? "Mode \(mode.rawValue) verrouillé" : "Mode \(mode.rawValue)")
+                .accessibilityLabel(mode.requiresPro && !isPro ? "Mode \(mode.displayTitle) verrouillé" : "Mode \(mode.displayTitle)")
             }
         }
     }
@@ -294,7 +309,7 @@ private struct PrimaryControls: View {
 
             HStack(spacing: 8) {
                 ActionPill(
-                    title: isPro ? "Détail" : "Détail Pro",
+                    title: isPro ? "Détail" : "Détail version Pro",
                     systemImage: isPro ? "list.bullet.rectangle" : "lock.fill",
                     action: onDetails
                 )
@@ -847,7 +862,7 @@ private struct HistoryView: View {
                     ForEach(entries) { entry in
                         VStack(alignment: .leading, spacing: 6) {
                             HStack {
-                                Text(entry.mode.rawValue)
+                                Text(entry.mode.displayTitle)
                                     .font(.headline)
                                 Spacer()
                                 Text(entry.mainAmount.currencyText)

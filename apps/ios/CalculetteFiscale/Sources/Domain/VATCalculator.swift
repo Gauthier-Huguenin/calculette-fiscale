@@ -7,6 +7,19 @@ enum CalculationMode: String, CaseIterable, Codable, Identifiable {
     case margin = "Marge"
 
     var id: String { rawValue }
+
+    var displayTitle: String {
+        switch self {
+        case .vat:
+            return "TVA"
+        case .independent:
+            return "Net pro"
+        case .netGoal:
+            return "Objectif net"
+        case .margin:
+            return "Marge"
+        }
+    }
 }
 
 enum AmountKind: String, CaseIterable, Codable, Identifiable {
