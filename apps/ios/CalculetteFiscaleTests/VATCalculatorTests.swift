@@ -237,6 +237,65 @@ final class VATCalculatorTests: XCTestCase {
         XCTAssertEqual(state.amountText, "0,5")
     }
 
+    func testStateCustomVATRateDrivesCurrentResult() {
+        var state = CalculatorViewState()
+
+        state.selectCustomVATRate()
+        state.customVATRateText = "15"
+        state.activeEntryField = .amount
+        state.tapKey("1")
+        state.tapKey("0")
+        state.tapKey("0")
+
+        let result = state.currentResult()
+
+        XCTAssertLine(result, "vat", equals: "15.00")
+        XCTAssertLine(result, "ttc", equals: "115.00")
+    }
+
+    func testStateMovedIndependentSettingsKeepSameCalculationInput() {
+        var state = CalculatorViewState()
+
+        state.selectMode(.independent)
+        state.selectedProfileId = .microBICService
+        state.amountKind = .ttc
+        state.vflEnabled = true
+        state.franchiseInBase = false
+        state.tapKey("1")
+        state.tapKey("2")
+        state.tapKey("0")
+        state.tapKey("0")
+
+        let result = state.currentResult()
+
+        XCTAssertLine(result, "ca_ht", equals: "1000.00")
+        XCTAssertLine(result, "social", equals: "212.00")
+        XCTAssertLine(result, "vfl", equals: "17.00")
+        XCTAssertCurrency(result.mainAmount, "771.00")
+    }
+
+    func testStateMovedMarginSettingsKeepSameCalculationInput() {
+        var state = CalculatorViewState()
+
+        state.selectMode(.margin)
+        state.purchaseKind = .ttc
+        state.saleKind = .ttc
+        state.vatDeductibleOnPurchase = true
+        state.selectMarginField(.purchase)
+        state.tapKey("7")
+        state.tapKey("2")
+        state.selectMarginField(.sale)
+        state.tapKey("1")
+        state.tapKey("2")
+        state.tapKey("0")
+
+        let result = state.currentResult()
+
+        XCTAssertLine(result, "purchase_ht", equals: "60.00")
+        XCTAssertLine(result, "sale_ht", equals: "100.00")
+        XCTAssertLine(result, "net_vat", equals: "8.00")
+    }
+
     func testHistoryPersistsLocally() {
         var state = CalculatorViewState()
         let result = state.currentResult()
