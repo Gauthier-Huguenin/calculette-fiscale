@@ -12,6 +12,7 @@
 		000000000000000000000103 /* CalculatorShellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000203 /* CalculatorShellView.swift */; };
 		000000000000000000000104 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000204 /* Assets.xcassets */; };
 		000000000000000000000105 /* VATCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000205 /* VATCalculatorTests.swift */; };
+		000000000000000000000106 /* CalculatorViewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000209 /* CalculatorViewState.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -33,6 +34,7 @@
 		000000000000000000000206 /* Preview Content */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "Preview Content"; sourceTree = "<group>"; };
 		000000000000000000000207 /* CalculetteFiscale.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CalculetteFiscale.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		000000000000000000000208 /* CalculetteFiscaleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CalculetteFiscaleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		000000000000000000000209 /* CalculatorViewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalculatorViewState.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,6 +78,7 @@
 			children = (
 				000000000000000000000201 /* CalculetteFiscaleApp.swift */,
 				000000000000000000000504 /* Domain */,
+				000000000000000000000506 /* State */,
 				000000000000000000000505 /* Views */,
 			);
 			path = Sources;
@@ -95,6 +98,14 @@
 				000000000000000000000203 /* CalculatorShellView.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		000000000000000000000506 /* State */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000209 /* CalculatorViewState.swift */,
+			);
+			path = State;
 			sourceTree = "<group>";
 		};
 		000000000000000000000507 /* Resources */ = {
@@ -225,6 +236,7 @@
 			files = (
 				000000000000000000000101 /* CalculetteFiscaleApp.swift in Sources */,
 				000000000000000000000102 /* VATCalculator.swift in Sources */,
+				000000000000000000000106 /* CalculatorViewState.swift in Sources */,
 				000000000000000000000103 /* CalculatorShellView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
