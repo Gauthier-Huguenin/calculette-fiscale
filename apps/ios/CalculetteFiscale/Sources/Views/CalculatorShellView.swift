@@ -107,10 +107,6 @@ private struct HeaderBar: View {
                 Text("Calculette Fiscale")
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(.white)
-
-                Text("Barèmes vérifiés le 14/05/2026")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.58))
             }
 
             Spacer()
@@ -476,6 +472,9 @@ private struct CalculationSettingsView: View {
                 }
 
                 Section("Prudence") {
+                    Text("Barèmes vérifiés le 14/05/2026")
+                        .font(.body.weight(.semibold))
+
                     Text("Estimation indicative. Cette calculette ne remplace pas une déclaration officielle ni un conseil adapté à votre situation.")
                         .foregroundStyle(.secondary)
                 }
@@ -740,6 +739,8 @@ private struct CalculationDetailView: View {
 
                 Section("Formule utilisée") {
                     Text(result.formula)
+                    Text("Barèmes vérifiés le 14/05/2026")
+                        .fontWeight(.semibold)
                     Text("Source interne : \(result.sourceRuleSetId)")
                         .foregroundStyle(.secondary)
                 }
