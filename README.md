@@ -14,7 +14,10 @@ apps/
       Sources/
         Domain/
         State/
+        Store/
         Views/
+      Resources/
+        CalculetteFiscale.storekit
     CalculetteFiscaleTests/
 docs/
   product-note-calculette-fiscale.md
@@ -38,19 +41,51 @@ Espaces prevus plus tard :
 - Cible minimum : iOS 17
 - Domaine : calculs deterministes dans `Sources/Domain`, constantes fiscales versionnees avec le jeu de regles `fr-2026-v1-2026-05-14`
 - Etat local : `Sources/State`, historique encode en JSON dans `UserDefaults`, limite aux 50 derniers calculs
+- Monetisation : StoreKit 2 dans `Sources/Store`, achat unique non-consommable `pro_lifetime`, fichier local `Resources/CalculetteFiscale.storekit`
 - Donnees : aucun backend et aucun envoi de montant ou de profil
 
 Build local :
 
 ```bash
-xcodebuild -project apps/ios/CalculetteFiscale.xcodeproj -scheme CalculetteFiscale -destination 'platform=iOS Simulator,name=iPhone 17' CODE_SIGNING_ALLOWED=NO build
+xcodebuild -project apps/ios/CalculetteFiscale.xcodeproj -scheme CalculetteFiscale -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/calculette-fiscale-derived CODE_SIGNING_ALLOWED=NO build
 ```
 
 Tests :
 
 ```bash
-xcodebuild -project apps/ios/CalculetteFiscale.xcodeproj -scheme CalculetteFiscale -destination 'platform=iOS Simulator,name=iPhone 17' CODE_SIGNING_ALLOWED=NO test
+xcodebuild -project apps/ios/CalculetteFiscale.xcodeproj -scheme CalculetteFiscale -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/calculette-fiscale-derived CODE_SIGNING_ALLOWED=NO test
 ```
+
+## Tester l'achat Pro localement
+
+Le scheme `CalculetteFiscale` reference `CalculetteFiscale/Resources/CalculetteFiscale.storekit`.
+Ce fichier contient le produit local :
+
+- Type : achat integre non-consommable.
+- Product id : `pro_lifetime`.
+- Nom : `Calculette Fiscale Pro`.
+- Prix de test : `9.99`.
+
+Workflow manuel dans Xcode :
+
+1. Ouvrir `apps/ios/CalculetteFiscale.xcodeproj`.
+2. Selectionner le scheme `CalculetteFiscale` et un simulateur iPhone.
+3. Verifier que la StoreKit Configuration du scheme pointe vers `CalculetteFiscale.storekit`.
+4. Lancer l'app, toucher `Independant`, `Objectif net`, `Marge`, l'historique ou le detail.
+5. Le paywall doit s'ouvrir. Acheter `Calculette Fiscale Pro` via la feuille StoreKit locale.
+6. Les modes Pro, l'historique et le detail complet doivent se debloquer immediatement.
+7. Pour rejouer le scenario, reinitialiser les transactions StoreKit locales dans Xcode, puis relancer l'app.
+
+La restauration utilise `AppStore.sync()` uniquement depuis le bouton `Restaurer mes achats`.
+Si le produit StoreKit ne se charge pas, le mode TVA et la copie du resultat principal restent utilisables.
+
+Configuration App Store Connect restante avant publication :
+
+- Creer l'achat integre non-consommable `pro_lifetime`.
+- Renseigner le nom `Calculette Fiscale Pro`.
+- Configurer le prix cible `9,99 EUR`.
+- Ajouter la localisation francaise, les informations de review et les metadonnees demandees par Apple.
+- Garder l'affichage du prix dans l'app base sur `Product.displayPrice`.
 
 ## Documents de reference
 
@@ -70,9 +105,8 @@ xcodebuild -project apps/ios/CalculetteFiscale.xcodeproj -scheme CalculetteFisca
 Modes livres :
 
 - TVA : HT vers TTC, TTC vers HT, TVA seule, taux 20 %, 10 %, 5,5 %, 2,1 % et taux personnalise.
-- Independant : micro-BIC vente, micro-BIC prestation, micro-BNC prestation regime general, franchise en base, versement liberatoire, detail TVA, cotisations et net estime.
-- Objectif net : estimation du montant HT et TTC a facturer pour garder un montant cible.
-- Marge : achat HT/TTC, vente HT/TTC, marge brute, taux de marge, taux de marque, TVA collectee, TVA deductible et TVA nette.
+- Gratuit : calculette standard, TVA simple, taux TVA francais et copie du resultat principal.
+- Pro : Independant, Objectif net, Marge, historique et detail complet des formules.
 
 Limites V1 :
 

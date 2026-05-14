@@ -21,6 +21,11 @@
 - Utiliser des calculs deterministes pour les montants fiscaux.
 - Ne jamais confier un calcul fiscal final a un LLM.
 - Les constantes fiscales doivent etre versionnees, testees et sourcees dans `docs/fiscal-rules-research-2026.md`.
+- La monetisation iOS vit dans `apps/ios/CalculetteFiscale/Sources/Store`.
+- Utiliser StoreKit 2 pour l'achat Pro V1. Produit non-consommable `pro_lifetime`.
+- Ne pas ajouter de backend pour l'etat Pro. Ne pas envoyer les montants saisis.
+- Ne jamais hardcoder un faux achat Pro actif en production.
+- Pour les tests locaux, utiliser `apps/ios/CalculetteFiscale/Resources/CalculetteFiscale.storekit` et des mocks unitaires.
 
 ## Documentation
 

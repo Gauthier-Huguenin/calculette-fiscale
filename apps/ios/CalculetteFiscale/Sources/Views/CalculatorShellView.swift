@@ -2,11 +2,14 @@ import SwiftUI
 import UIKit
 
 struct CalculatorShellView: View {
+    @Environment(EntitlementStore.self) private var entitlementStore
+
     private let ruleSet = TaxRuleSet.french2026
 
     @State private var state = CalculatorViewState()
     @State private var isShowingDetails = false
     @State private var isShowingHistory = false
+    @State private var isShowingPaywall = false
     @State private var isShowingSettings = false
     @State private var copyFeedback = false
 
@@ -23,11 +26,16 @@ struct CalculatorShellView: View {
 
                 VStack(spacing: 10) {
                     HeaderBar(
-                        onHistory: { isShowingHistory = true },
+                        onHistory: openHistory,
+                        isPro: entitlementStore.isPro,
                         historyCount: state.history.count
                     )
 
-                    ModeSelector(state: $state)
+                    ModeSelector(
+                        state: $state,
+                        isPro: entitlementStore.isPro,
+                        onLockedMode: { _ in showPaywall() }
+                    )
 
                     Spacer(minLength: 4)
 
@@ -45,7 +53,8 @@ struct CalculatorShellView: View {
                         state: $state,
                         ruleSet: ruleSet,
                         onSettings: { isShowingSettings = true },
-                        onDetails: { isShowingDetails = true }
+                        onDetails: openDetails,
+                        isPro: entitlementStore.isPro
                     )
 
                     NumericKeypad(keyHeight: keyHeight) { key in
@@ -58,6 +67,13 @@ struct CalculatorShellView: View {
             }
         }
         .preferredColorScheme(.dark)
+        .onChange(of: entitlementStore.isPro) { _, isPro in
+            if isPro {
+                isShowingPaywall = false
+            } else if state.selectedMode.requiresPro {
+                state.selectMode(.vat)
+            }
+        }
         .sheet(isPresented: $isShowingSettings) {
             CalculationSettingsView(state: $state, ruleSet: ruleSet)
                 .presentationDetents([.medium, .large])
@@ -76,29 +92,63 @@ struct CalculatorShellView: View {
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
         }
+        .sheet(isPresented: $isShowingPaywall) {
+            PaywallView(entitlementStore: entitlementStore)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+        }
     }
 
     private func handleKey(_ key: String) {
         state.tapKey(key)
 
-        if key == "=" {
+        if key == "=" && entitlementStore.isPro {
             state.addHistoryEntry(result: result)
         }
     }
 
     private func copyResult() {
-        UIPasteboard.general.string = result.copyText
-        state.addHistoryEntry(result: result)
+        UIPasteboard.general.string = entitlementStore.isPro
+            ? result.copyText
+            : "\(result.mainLabel) : \(result.mainAmount.currencyText)"
+
+        if entitlementStore.isPro {
+            state.addHistoryEntry(result: result)
+        }
+
         copyFeedback = true
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.1) {
             copyFeedback = false
         }
     }
+
+    private func openHistory() {
+        guard entitlementStore.isPro else {
+            showPaywall()
+            return
+        }
+
+        isShowingHistory = true
+    }
+
+    private func openDetails() {
+        guard entitlementStore.isPro else {
+            showPaywall()
+            return
+        }
+
+        isShowingDetails = true
+    }
+
+    private func showPaywall() {
+        isShowingPaywall = true
+    }
 }
 
 private struct HeaderBar: View {
     let onHistory: () -> Void
+    let isPro: Bool
     let historyCount: Int
 
     var body: some View {
@@ -112,7 +162,10 @@ private struct HeaderBar: View {
             Spacer()
 
             Button(action: onHistory) {
-                Label("\(historyCount)", systemImage: "clock.arrow.circlepath")
+                Label(
+                    isPro ? "\(historyCount)" : "Pro",
+                    systemImage: isPro ? "clock.arrow.circlepath" : "lock.fill"
+                )
                     .labelStyle(.titleAndIcon)
                     .font(.system(size: 14, weight: .semibold))
                     .frame(minWidth: 56, minHeight: 44)
@@ -128,25 +181,38 @@ private struct HeaderBar: View {
 
 private struct ModeSelector: View {
     @Binding var state: CalculatorViewState
+    let isPro: Bool
+    let onLockedMode: (CalculationMode) -> Void
 
     var body: some View {
         HStack(spacing: 7) {
             ForEach(CalculationMode.allCases) { mode in
                 Button {
-                    state.selectMode(mode)
+                    if ProAccessPolicy.isAllowed(.mode(mode), isPro: isPro) {
+                        state.selectMode(mode)
+                    } else {
+                        onLockedMode(mode)
+                    }
                 } label: {
-                    Text(mode.rawValue)
-                        .font(.system(size: 12, weight: .semibold))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.72)
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: 44)
-                        .background(state.selectedMode == mode ? Color.white : Color.white.opacity(0.12))
-                        .foregroundStyle(state.selectedMode == mode ? Color.black : Color.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    HStack(spacing: 3) {
+                        Text(mode.rawValue)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.68)
+
+                        if mode.requiresPro && !isPro {
+                            Image(systemName: "lock.fill")
+                                .font(.system(size: 9, weight: .bold))
+                        }
+                    }
+                    .font(.system(size: 12, weight: .semibold))
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 44)
+                    .background(state.selectedMode == mode ? Color.white : Color.white.opacity(0.12))
+                    .foregroundStyle(state.selectedMode == mode ? Color.black : Color.white.opacity(mode.requiresPro && !isPro ? 0.62 : 1))
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Mode \(mode.rawValue)")
+                .accessibilityLabel(mode.requiresPro && !isPro ? "Mode \(mode.rawValue) verrouillé" : "Mode \(mode.rawValue)")
             }
         }
     }
@@ -210,6 +276,7 @@ private struct PrimaryControls: View {
     let ruleSet: TaxRuleSet
     let onSettings: () -> Void
     let onDetails: () -> Void
+    let isPro: Bool
 
     var body: some View {
         VStack(spacing: 8) {
@@ -227,8 +294,8 @@ private struct PrimaryControls: View {
 
             HStack(spacing: 8) {
                 ActionPill(
-                    title: "Détail",
-                    systemImage: "list.bullet.rectangle",
+                    title: isPro ? "Détail" : "Détail Pro",
+                    systemImage: isPro ? "list.bullet.rectangle" : "lock.fill",
                     action: onDetails
                 )
 
@@ -813,4 +880,5 @@ private struct HistoryView: View {
 
 #Preview {
     CalculatorShellView()
+        .environment(EntitlementStore(service: PreviewStoreKitService()))
 }
