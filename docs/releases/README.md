@@ -16,7 +16,8 @@ Il sert de source de verite interne pour :
 - les points encore a confirmer.
 
 Les captures App Store brutes prises localement vivent dans
-`docs/releases/app-store-screenshots/raw/`.
+`docs/releases/app-store-screenshots/raw/`. Les exports finaux prepares pour
+App Store Connect vivent dans `docs/releases/app-store-screenshots/canva/`.
 
 ## Convention
 

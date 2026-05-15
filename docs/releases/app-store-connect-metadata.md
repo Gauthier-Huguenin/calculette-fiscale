@@ -228,10 +228,12 @@ Set brut capture le 2026-05-15 : 6 captures simulateur conservees dans
 historique local et formules visibles. La sixieme montre les reglages
 personnalisables : taux de TVA, profil micro et options du calcul.
 
+Set final Canva le 2026-05-15 : 6 captures iPhone `1284 x 2778` conservees
+dans `docs/releases/app-store-screenshots/canva/`, pretes a etre versees dans
+App Store Connect.
+
 ## Points a confirmer avant soumission
 
 - Creer l'achat integre `pro_lifetime` dans App Store Connect.
-- Deployer `apps/web` sur Coolify pour rendre publiques les pages
-  `https://calculette.tax`, `/support` et `/privacy`.
 - Refaire une verification officielle des constantes fiscales si une publication
   intervient apres une nouvelle annonce fiscale.
