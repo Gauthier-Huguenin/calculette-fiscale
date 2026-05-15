@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    min-height: 100vh;
+    margin: 0;
+    background: #090908;
+    color: #f7f7f5;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  }
+
+  a {
+    color: inherit;
+  }
+}

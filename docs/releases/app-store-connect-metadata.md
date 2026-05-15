@@ -46,6 +46,7 @@ Limites Apple retenues au 2026-05-15 :
 - URL d'assistance : `https://calculette.tax/support`
 - URL marketing : `https://calculette.tax`
 - URL de politique de confidentialite : `https://calculette.tax/privacy`
+- Dossier web Coolify : `apps/web`
 
 ## Champs App Store, francais
 
@@ -221,7 +222,7 @@ captures, avec le meme style visuel que l'app et du texte court.
   numero.
 - Renseigner le `DEVELOPMENT_TEAM` avant archivage App Store.
 - Creer l'achat integre `pro_lifetime` dans App Store Connect.
-- Publier ou preparer les pages `https://calculette.tax`, `/support` et
-  `/privacy`.
+- Deployer `apps/web` sur Coolify pour rendre publiques les pages
+  `https://calculette.tax`, `/support` et `/privacy`.
 - Refaire une verification officielle des constantes fiscales si une publication
   intervient apres une nouvelle annonce fiscale.

@@ -19,9 +19,15 @@ apps/
       Resources/
         CalculetteFiscale.storekit
     CalculetteFiscaleTests/
+  web/
+    app/
+    components/
+    lib/
+    public/images/
 docs/
   product-note-calculette-fiscale.md
   fiscal-rules-research-2026.md
+  website/
   releases/
 ```
 
@@ -56,6 +62,32 @@ Tests :
 ```bash
 xcodebuild -project apps/ios/CalculetteFiscale.xcodeproj -scheme CalculetteFiscale -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/calculette-fiscale-derived CODE_SIGNING_ALLOWED=NO test
 ```
+
+## Site web
+
+Le site public vit dans `apps/web`.
+
+- Stack : Next.js App Router, TypeScript et Tailwind CSS.
+- Langue par defaut : francais.
+- Anglais : routes sous `/en`.
+- URL publique cible : `https://calculette.tax`.
+- Pages App Store Connect : `/privacy` et `/support`.
+- Donnees : pas d'analytics, pas de cookies, pas de publicite et pas de backend.
+
+Commandes depuis la racine :
+
+```bash
+npm run dev:web
+npm run build:web
+npm run typecheck:web
+npm run lint:web
+```
+
+Coolify doit cibler `apps/web` comme dossier applicatif.
+
+- Build command : `npm run build`
+- Start command : `npm run start`
+- Port : `3000`
 
 ## Tester l'achat Pro localement
 
@@ -92,6 +124,7 @@ Configuration App Store Connect restante avant publication :
 
 - `docs/product-note-calculette-fiscale.md` : note produit, positionnement, V1, UX, modele economique et decisions.
 - `docs/fiscal-rules-research-2026.md` : recherche fiscale officielle, constantes, formules, limites et tests attendus pour le moteur de calcul.
+- `docs/website/` : structure, routes publiques, configuration Coolify et URLs App Store Connect du site.
 - `docs/releases/` : textes de publication App Store, notes de version, metadonnees App Store Connect et brouillons des pages publiques.
 
 ## Decisions retenues

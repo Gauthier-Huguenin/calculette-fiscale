@@ -3,8 +3,8 @@
 Source : preparation interne pour `https://calculette.tax`, le
 2026-05-15T12:31:04+0400.
 
-Ces textes sont des brouillons prêts a adapter pour le site public. Ils ne
-creent pas de site dans ce depot.
+Ces textes ont servi de base au site minimal dans `apps/web`. Les routes
+publiques finales doivent rester synchronisees avec `docs/website/README.md`.
 
 ## Page marketing
 

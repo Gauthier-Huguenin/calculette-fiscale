@@ -13,6 +13,14 @@ xcuserdata/
 .build/
 .swiftpm/
 
+# Web
+node_modules/
+.next/
+out/
+dist/
+coverage/
+*.tsbuildinfo
+
 # Logs
 *.log
 

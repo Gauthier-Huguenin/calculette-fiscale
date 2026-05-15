@@ -1,0 +1,20 @@
+{
+  "name": "calculette-fiscale",
+  "private": true,
+  "workspaces": [
+    "apps/web"
+  ],
+  "overrides": {
+    "postcss": "^8.5.10",
+    "next": {
+      "postcss": "^8.5.10"
+    }
+  },
+  "scripts": {
+    "dev:web": "npm run dev --workspace @calculette-fiscale/web",
+    "build:web": "npm run build --workspace @calculette-fiscale/web",
+    "start:web": "npm run start --workspace @calculette-fiscale/web",
+    "typecheck:web": "npm run typecheck --workspace @calculette-fiscale/web",
+    "lint:web": "npm run lint --workspace @calculette-fiscale/web"
+  }
+}
