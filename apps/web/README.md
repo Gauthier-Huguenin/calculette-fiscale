@@ -59,9 +59,14 @@ npm run lint
 
 Configurer Coolify sur le dossier `apps/web`.
 
+- Runtime variable : `NIXPACKS_NODE_VERSION=22.13.0`
+- Install command : `npm ci --include=dev --no-audit --no-fund`
 - Build command : `npm run build`
 - Start command : `npm run start`
 - Port : `3000`
+
+Le lockfile `package-lock.json` de ce dossier doit etre commite. Coolify utilise
+`apps/web` comme dossier applicatif et ne voit pas le lockfile de la racine.
 
 Variables publiques :
 

@@ -90,9 +90,14 @@ npm run lint:web
 
 Coolify doit cibler `apps/web` comme dossier applicatif.
 
+- Runtime variable : `NIXPACKS_NODE_VERSION=22.13.0`
+- Install command : `npm ci --include=dev --no-audit --no-fund`
 - Build command : `npm run build`
 - Start command : `npm run start`
 - Port : `3000`
+
+Le dossier `apps/web` garde son propre `package-lock.json` parce que Coolify
+construit ce dossier directement, sans utiliser le lockfile de la racine.
 
 ## Tester l'achat Pro localement
 

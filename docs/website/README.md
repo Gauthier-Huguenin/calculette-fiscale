@@ -47,9 +47,14 @@ volontairement simple.
 
 Configurer Coolify sur le dossier applicatif `apps/web`.
 
+- Runtime variable : `NIXPACKS_NODE_VERSION=22.13.0`
+- Install command : `npm ci --include=dev --no-audit --no-fund`
 - Build command : `npm run build`
 - Start command : `npm run start`
 - Port : `3000`
+
+Le lockfile `apps/web/package-lock.json` est volontairement versionne, car
+Coolify construit `apps/web` comme application autonome.
 
 Variables publiques :
 
