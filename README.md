@@ -22,6 +22,7 @@ apps/
 docs/
   product-note-calculette-fiscale.md
   fiscal-rules-research-2026.md
+  releases/
 ```
 
 Espaces prevus plus tard :
@@ -91,6 +92,7 @@ Configuration App Store Connect restante avant publication :
 
 - `docs/product-note-calculette-fiscale.md` : note produit, positionnement, V1, UX, modele economique et decisions.
 - `docs/fiscal-rules-research-2026.md` : recherche fiscale officielle, constantes, formules, limites et tests attendus pour le moteur de calcul.
+- `docs/releases/` : textes de publication App Store, notes de version, metadonnees App Store Connect et brouillons des pages publiques.
 
 ## Decisions retenues
 
