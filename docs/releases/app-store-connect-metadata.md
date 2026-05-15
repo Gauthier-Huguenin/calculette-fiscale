@@ -34,6 +34,10 @@ Limites Apple retenues au 2026-05-15 :
 - Sous-titre : `TVA, charges & net`
 - Bundle ID : `io.hgnn.calculettefiscale`
 - SKU recommande : `io.hgnn.calculettefiscale`
+- Version marketing : `1.0.0`
+- Build : `1`
+- Cible minimum : `iOS 17.0`
+- Apple Developer Team : `393ZW5QCU6`
 - Langue principale : `Francais`
 - Localisations V1 : francais uniquement
 - Categorie principale recommandee : `Finance`
@@ -167,6 +171,9 @@ Etat recommande pour la V1, sous reserve de verification finale du binaire soumi
 - Tracking publicitaire : non.
 - Publicite : non.
 - Analytics tiers : non detecte dans le code actuel.
+- Privacy manifest : `Resources/PrivacyInfo.xcprivacy`, avec declaration de
+  `NSPrivacyAccessedAPICategoryUserDefaults` pour l'historique local et l'etat
+  Pro.
 - Donnees traitees localement : montants saisis, historique des calculs, etat Pro
   cache localement.
 - Donnees transmises a Apple : transactions StoreKit gerees par Apple pour
@@ -218,9 +225,6 @@ captures, avec le meme style visuel que l'app et du texte court.
 
 ## Points a confirmer avant soumission
 
-- Passer `MARKETING_VERSION` a `1.0.0` dans Xcode si la release porte bien ce
-  numero.
-- Renseigner le `DEVELOPMENT_TEAM` avant archivage App Store.
 - Creer l'achat integre `pro_lifetime` dans App Store Connect.
 - Deployer `apps/web` sur Coolify pour rendre publiques les pages
   `https://calculette.tax`, `/support` et `/privacy`.

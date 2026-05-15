@@ -18,6 +18,7 @@ apps/
         Views/
       Resources/
         CalculetteFiscale.storekit
+        PrivacyInfo.xcprivacy
     CalculetteFiscaleTests/
   web/
     app/
@@ -46,10 +47,12 @@ Espaces prevus plus tard :
 - Langue V1 : francais
 - UI : SwiftUI
 - Cible minimum : iOS 17
+- Version marketing : `1.0.0`
+- Build : `1`
 - Domaine : calculs deterministes dans `Sources/Domain`, constantes fiscales versionnees avec le jeu de regles `fr-2026-v1-2026-05-14`
 - Etat local : `Sources/State`, historique encode en JSON dans `UserDefaults`, limite aux 50 derniers calculs
 - Monetisation : StoreKit 2 dans `Sources/Store`, achat unique non-consommable `pro_lifetime`, fichier local `Resources/CalculetteFiscale.storekit`
-- Donnees : aucun backend et aucun envoi de montant ou de profil
+- Donnees : aucun backend et aucun envoi de montant ou de profil, manifest de confidentialite dans `Resources/PrivacyInfo.xcprivacy`
 
 Build local :
 
