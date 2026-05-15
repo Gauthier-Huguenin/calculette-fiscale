@@ -75,7 +75,9 @@ Le site public vit dans `apps/web`.
 - Anglais : routes sous `/en`.
 - URL publique cible : `https://calculette.tax`.
 - Pages App Store Connect : `/privacy` et `/support`.
-- Donnees : pas d'analytics, pas de cookies, pas de publicite et pas de backend.
+- Analytics web : Umami auto-heberge, sans cookies, configure via variables publiques.
+- Donnees app : pas de backend et aucun envoi de montant ou de profil.
+- Indexation : `/sitemap.xml` standard et `/sitemap-gsc.xml` pour Google Search Console.
 
 Commandes depuis la racine :
 

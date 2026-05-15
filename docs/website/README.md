@@ -12,7 +12,8 @@ Le site est volontairement minimal pour la soumission Apple :
 - fournir une politique de confidentialite publique ;
 - fournir une page support avec contact visible ;
 - proposer le francais par defaut et l'anglais sous `/en` ;
-- ne pas ajouter d'analytics, de cookies, de publicite ou de backend.
+- utiliser un tracking web Umami auto-heberge sans cookies ;
+- ne pas ajouter de publicite, de formulaire ou de backend applicatif.
 
 ## Structure
 
@@ -35,7 +36,12 @@ apps/
 - `https://calculette.tax/en/support`
 - `https://calculette.tax/robots.txt`
 - `https://calculette.tax/sitemap.xml`
+- `https://calculette.tax/sitemap-gsc.xml`
 - `https://calculette.tax/llms.txt`
+
+Soumettre `https://calculette.tax/sitemap-gsc.xml` dans Google Search Console.
+Le sitemap standard garde les alternates linguistiques, le sitemap GSC reste
+volontairement simple.
 
 ## Deploiement Coolify
 
@@ -50,6 +56,8 @@ Variables publiques :
 ```bash
 NEXT_PUBLIC_SITE_URL=https://calculette.tax
 NEXT_PUBLIC_APP_STORE_URL=
+NEXT_PUBLIC_UMAMI_SCRIPT_URL=https://stats.hgnn.io/script.js
+NEXT_PUBLIC_UMAMI_WEBSITE_ID=7bc5c49d-c360-42b3-af67-8c02012f8517
 ```
 
 Renseigner `NEXT_PUBLIC_APP_STORE_URL` quand l'URL App Store finale existe.
@@ -62,5 +70,6 @@ Renseigner `NEXT_PUBLIC_APP_STORE_URL` quand l'URL App Store finale existe.
 
 ## Confidentialite
 
-Le site V1 n'ajoute pas d'analytics, de cookies, de publicite ou de formulaire.
-Le contact support utilise un lien `mailto:` vers `support@calculette.tax`.
+Le site V1 utilise Umami auto-heberge pour des mesures agregees sans cookies.
+Il n'ajoute pas de publicite, de formulaire ou de backend applicatif. Le contact
+support utilise un lien `mailto:` vers `support@calculette.tax`.

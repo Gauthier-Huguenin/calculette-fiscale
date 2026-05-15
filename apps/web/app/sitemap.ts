@@ -1,8 +1,7 @@
 import type { MetadataRoute } from "next";
 
+import { getSitemapEntries } from "@/lib/sitemap";
 import { getPath, languageOptions, siteUrl, type PageKind } from "@/lib/site-content";
-
-const pages: PageKind[] = ["home", "privacy", "support"];
 
 function buildAlternates(page: PageKind) {
   return {
@@ -14,15 +13,11 @@ function buildAlternates(page: PageKind) {
 }
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const lastModified = new Date("2026-05-15");
-
-  return pages.flatMap((page) =>
-    languageOptions.map((language) => ({
-      url: `${siteUrl}${getPath(language.locale, page)}`,
-      lastModified,
-      changeFrequency: "monthly" as const,
-      priority: page === "home" ? 1 : 0.6,
-      alternates: buildAlternates(page),
-    })),
-  );
+  return getSitemapEntries().map((entry) => ({
+    url: entry.url,
+    lastModified: entry.lastModified,
+    changeFrequency: entry.changeFrequency,
+    priority: entry.priority,
+    alternates: buildAlternates(entry.page),
+  }));
 }

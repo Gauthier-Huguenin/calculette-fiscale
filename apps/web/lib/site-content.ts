@@ -70,6 +70,8 @@ export interface SupportContent {
 
 export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://calculette.tax").replace(/\/$/, "");
 export const appStoreUrl = process.env.NEXT_PUBLIC_APP_STORE_URL || "";
+export const umamiScriptUrl = process.env.NEXT_PUBLIC_UMAMI_SCRIPT_URL?.trim() || "";
+export const umamiWebsiteId = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID?.trim() || "";
 export const supportEmail = "support@calculette.tax";
 export const defaultLocale: Locale = "fr";
 
@@ -143,7 +145,7 @@ export const homeContent: Record<Locale, HomeContent> = {
       title: "Conçue pour rester locale",
       body:
         "Calculette Fiscale ne demande pas de compte et ne contient pas de backend. Les montants saisis et l'historique Pro restent sur l'iPhone.",
-      points: ["Sans publicité", "Sans analytics", "Sans cookies", "Achat Pro via StoreKit 2"],
+      points: ["App sans publicité", "App sans analytics SDK", "Site suivi avec Umami sans cookies", "Achat Pro via StoreKit 2"],
     },
     legal:
       "Les résultats fiscaux sont des estimations indicatives. Ils ne remplacent pas une déclaration officielle, un expert-comptable ou un conseil fiscal adapté.",
@@ -194,7 +196,7 @@ export const homeContent: Record<Locale, HomeContent> = {
       title: "Built to stay local",
       body:
         "Calculette Fiscale does not require an account and does not use a backend. Entered amounts and Pro history stay on the iPhone.",
-      points: ["No ads", "No analytics", "No cookies", "Pro purchase through StoreKit 2"],
+      points: ["No ads in the app", "No analytics SDK in the app", "Website analytics with cookie-free Umami", "Pro purchase through StoreKit 2"],
     },
     legal:
       "Tax results are indicative estimates. They do not replace an official filing, an accountant or tax advice tailored to your situation.",
@@ -232,7 +234,7 @@ export const privacyContent: Record<Locale, PrivacyContent> = {
       {
         title: "Site web",
         body:
-          "Ce site public ne dépose pas de cookies et n'intègre pas d'analytics. Les journaux techniques éventuels de l'hébergeur servent uniquement à maintenir le service.",
+          "Ce site public utilise Umami auto-hébergé pour mesurer des visites agrégées sans cookies. Les journaux techniques éventuels de l'hébergeur servent uniquement à maintenir le service.",
       },
       {
         title: "Contact",
@@ -270,7 +272,7 @@ export const privacyContent: Record<Locale, PrivacyContent> = {
       {
         title: "Website",
         body:
-          "This public website does not set cookies and does not include analytics. Any technical hosting logs are only used to maintain the service.",
+          "This public website uses self-hosted Umami to measure aggregate visits without cookies. Any technical hosting logs are only used to maintain the service.",
       },
       {
         title: "Contact",

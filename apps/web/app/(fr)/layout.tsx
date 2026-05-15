@@ -1,6 +1,7 @@
 import type { Viewport } from "next";
 
 import "@/app/globals.css";
+import { UmamiAnalytics } from "@/components/umami-analytics";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -15,7 +16,10 @@ interface RootLayoutProps {
 export default function FrenchRootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="fr">
-      <body>{children}</body>
+      <body>
+        {children}
+        <UmamiAnalytics />
+      </body>
     </html>
   );
 }
