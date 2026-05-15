@@ -223,6 +223,11 @@ captures, avec le meme style visuel que l'app et du texte court.
    - Ecran : detail du calcul ou historique.
    - Objectif : rassurer sur la transparence et la confidentialite.
 
+Set brut capture le 2026-05-15 : 6 captures simulateur conservees dans
+`docs/releases/app-store-screenshots/raw/`. La cinquieme capture regroupe
+historique local et formules visibles. La sixieme montre les reglages
+personnalisables : taux de TVA, profil micro et options du calcul.
+
 ## Points a confirmer avant soumission
 
 - Creer l'achat integre `pro_lifetime` dans App Store Connect.

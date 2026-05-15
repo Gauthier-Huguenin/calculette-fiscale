@@ -15,6 +15,9 @@ Il sert de source de verite interne pour :
 - les tests realises avant publication ;
 - les points encore a confirmer.
 
+Les captures App Store brutes prises localement vivent dans
+`docs/releases/app-store-screenshots/raw/`.
+
 ## Convention
 
 Chaque version doit avoir son propre fichier :
