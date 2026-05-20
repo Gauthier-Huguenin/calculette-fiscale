@@ -69,7 +69,9 @@ export interface SupportContent {
 }
 
 export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://calculette.tax").replace(/\/$/, "");
-export const appStoreUrl = process.env.NEXT_PUBLIC_APP_STORE_URL || "";
+export const appStoreUrl =
+  process.env.NEXT_PUBLIC_APP_STORE_URL ||
+  "https://apps.apple.com/fr/app/calculette-fiscale/id6769760817?uo=4";
 export const umamiScriptUrl = process.env.NEXT_PUBLIC_UMAMI_SCRIPT_URL?.trim() || "";
 export const umamiWebsiteId = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID?.trim() || "";
 export const supportEmail = "support@calculette.tax";
