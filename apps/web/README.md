@@ -24,13 +24,13 @@ Copier `.env.example` vers `.env.local` en local si necessaire, puis renseigner 
 
 ```bash
 NEXT_PUBLIC_SITE_URL=https://calculette.tax
-NEXT_PUBLIC_APP_STORE_URL=
+NEXT_PUBLIC_APP_STORE_URL=https://apps.apple.com/fr/app/calculette-fiscale/id6769760817?uo=4
 NEXT_PUBLIC_UMAMI_SCRIPT_URL=https://stats.hgnn.io/script.js
 NEXT_PUBLIC_UMAMI_WEBSITE_ID=7bc5c49d-c360-42b3-af67-8c02012f8517
 ```
 
-`NEXT_PUBLIC_APP_STORE_URL` reste vide tant que l'URL App Store finale n'existe
-pas. Le bouton public affiche alors un etat de pre-lancement.
+Le bouton public pointe vers l'App Store quand `NEXT_PUBLIC_APP_STORE_URL` est
+renseigne.
 
 Le script Umami n'est injecte que si `NEXT_PUBLIC_UMAMI_SCRIPT_URL` et
 `NEXT_PUBLIC_UMAMI_WEBSITE_ID` sont renseignes.
@@ -72,7 +72,7 @@ Variables publiques :
 
 ```bash
 NEXT_PUBLIC_SITE_URL=https://calculette.tax
-NEXT_PUBLIC_APP_STORE_URL=
+NEXT_PUBLIC_APP_STORE_URL=https://apps.apple.com/fr/app/calculette-fiscale/id6769760817?uo=4
 NEXT_PUBLIC_UMAMI_SCRIPT_URL=https://stats.hgnn.io/script.js
 NEXT_PUBLIC_UMAMI_WEBSITE_ID=7bc5c49d-c360-42b3-af67-8c02012f8517
 ```

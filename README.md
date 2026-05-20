@@ -122,12 +122,12 @@ Workflow manuel dans Xcode :
 La restauration utilise `AppStore.sync()` uniquement depuis le bouton `Restaurer mes achats`.
 Si le produit StoreKit ne se charge pas, le mode TVA et la copie du resultat principal restent utilisables.
 
-Configuration App Store Connect restante avant publication :
+Configuration App Store Connect V1 publiee :
 
-- Creer l'achat integre non-consommable `pro_lifetime`.
-- Renseigner le nom `Calculette Fiscale Pro`.
-- Configurer le prix cible `9,99 EUR`.
-- Ajouter la localisation francaise, les informations de review et les metadonnees demandees par Apple.
+- App Store URL : `https://apps.apple.com/fr/app/calculette-fiscale/id6769760817?uo=4`.
+- Achat integre non-consommable : `pro_lifetime`.
+- Nom : `Calculette Fiscale Pro`.
+- Prix cible : `9,99 EUR`.
 - Garder l'affichage du prix dans l'app base sur `Product.displayPrice`.
 
 ## Documents de reference
