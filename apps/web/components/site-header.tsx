@@ -14,7 +14,7 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
   const alternateLanguage = getLanguage(alternateLocale);
 
   return (
-    <header className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-5 sm:px-8">
+    <header className="mx-auto flex w-full max-w-6xl flex-col items-start gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
       <Link className="flex items-center gap-3" href={language.homeHref} aria-label="Calculette Fiscale">
         <Image
           src="/images/app-icon.png"
@@ -27,7 +27,7 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
         <span className="text-sm font-semibold tracking-wide text-ink">Calculette Fiscale</span>
       </Link>
 
-      <nav className="flex items-center gap-3 text-sm font-semibold text-ink/70" aria-label="Navigation">
+      <nav className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-semibold text-ink/70" aria-label="Navigation">
         <Link className="hover:text-ink" href={language.privacyHref}>
           {content.nav.privacy}
         </Link>

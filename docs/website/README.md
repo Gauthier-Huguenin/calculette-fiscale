@@ -4,13 +4,15 @@ Le site public vit dans `apps/web`. Le depot reste organise comme un monorepo
 afin de garder l'app iOS, le site public et la documentation de publication dans
 le meme historique Git, sans melanger leurs sources.
 
-## Objectif V1
+## Objectif
 
-Le site est volontairement minimal pour la soumission Apple :
+Le site fournit les pages publiques necessaires a App Store Connect et sert
+maintenant aussi de surface d'acquisition organique :
 
 - fournir une URL marketing publique ;
 - fournir une politique de confidentialite publique ;
 - fournir une page support avec contact visible ;
+- proposer des pages SEO en francais pour les principaux cas d'usage ;
 - proposer le francais par defaut et l'anglais sous `/en` ;
 - utiliser un tracking web Umami auto-heberge sans cookies ;
 - ne pas ajouter de publicite, de formulaire ou de backend applicatif.
@@ -24,11 +26,15 @@ apps/
     components/
     lib/
     public/images/
+    public/images/screenshots/
 ```
 
 ## Routes publiques
 
 - `https://calculette.tax`
+- `https://calculette.tax/calcul-tva-ht-ttc`
+- `https://calculette.tax/revenu-net-auto-entrepreneur`
+- `https://calculette.tax/calcul-marge-tva`
 - `https://calculette.tax/privacy`
 - `https://calculette.tax/support`
 - `https://calculette.tax/en`
@@ -42,6 +48,9 @@ apps/
 Soumettre `https://calculette.tax/sitemap-gsc.xml` dans Google Search Console.
 Le sitemap standard garde les alternates linguistiques, le sitemap GSC reste
 volontairement simple.
+
+Les pages d'acquisition restent en francais uniquement pour la V1. Elles
+utilisent les captures App Store publiees dans `apps/web/public/images/screenshots/`.
 
 ## Deploiement Coolify
 

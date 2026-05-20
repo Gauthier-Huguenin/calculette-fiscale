@@ -1,5 +1,6 @@
 export type Locale = "fr" | "en";
 export type PageKind = "home" | "privacy" | "support";
+export type GuideSlug = "calcul-tva-ht-ttc" | "revenu-net-auto-entrepreneur" | "calcul-marge-tva";
 
 export interface LanguageOption {
   locale: Locale;
@@ -20,6 +21,32 @@ export interface FeatureItem {
 export interface QuestionAnswer {
   question: string;
   answer: string;
+}
+
+export interface GuideSection {
+  title: string;
+  body: string;
+  points?: string[];
+}
+
+export interface GuidePageContent {
+  slug: GuideSlug;
+  path: string;
+  title: string;
+  metaTitle: string;
+  metaDescription: string;
+  eyebrow: string;
+  headline: string;
+  intro: string;
+  image: string;
+  imageAlt: string;
+  primaryCta: string;
+  sections: GuideSection[];
+  appPitch: {
+    title: string;
+    body: string;
+  };
+  disclaimer: string;
 }
 
 export interface HomeContent {
@@ -77,6 +104,12 @@ export const umamiWebsiteId = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID?.trim() |
 export const supportEmail = "support@calculette.tax";
 export const defaultLocale: Locale = "fr";
 
+export const guideOrder: GuideSlug[] = [
+  "calcul-tva-ht-ttc",
+  "revenu-net-auto-entrepreneur",
+  "calcul-marge-tva",
+];
+
 export const languageOptions: LanguageOption[] = [
   {
     locale: "fr",
@@ -100,6 +133,129 @@ export const languageOptions: LanguageOption[] = [
   },
 ];
 
+export const guidePages: Record<GuideSlug, GuidePageContent> = {
+  "calcul-tva-ht-ttc": {
+    slug: "calcul-tva-ht-ttc",
+    path: "/calcul-tva-ht-ttc",
+    title: "Calcul TVA HT TTC",
+    metaTitle: "Calcul TVA HT TTC pour facture - Calculette Fiscale",
+    metaDescription:
+      "Passez du HT au TTC, retrouvez le HT depuis un TTC et isolez la TVA avec une calculette iPhone pensée pour les montants français.",
+    eyebrow: "TVA et factures",
+    headline: "Calcul TVA HT TTC pour vos devis et factures",
+    intro:
+      "Quand vous préparez un prix, il faut voir vite le hors taxe, le TTC et la TVA à mettre de côté. Calculette Fiscale garde ce calcul à portée de main sur iPhone.",
+    image: "/images/screenshots/ht-ttc.png",
+    imageAlt: "Capture iPhone du mode TVA de Calculette Fiscale",
+    primaryCta: "Télécharger la calculette TVA",
+    sections: [
+      {
+        title: "Ce que vous pouvez vérifier",
+        body:
+          "Le mode TVA aide à passer d'un montant HT à un TTC, à retrouver le HT depuis un TTC, ou à isoler uniquement la TVA.",
+        points: ["Taux français usuels", "Taux personnalisé", "Lecture HT, TVA et TTC"],
+      },
+      {
+        title: "Avant d'envoyer un devis",
+        body:
+          "Vous pouvez tester un prix en quelques secondes, puis copier le résultat principal pour le reprendre dans un message, une note ou un outil de facturation.",
+      },
+      {
+        title: "Limites à garder en tête",
+        body:
+          "Le bon traitement TVA dépend de votre activité, de votre régime, de votre client et parfois du lieu de l'opération. L'app aide au calcul indicatif, elle ne valide pas votre situation fiscale.",
+      },
+    ],
+    appPitch: {
+      title: "Une calculette TVA française, sans compte",
+      body:
+        "Calculette Fiscale fonctionne sans backend et sans publicité. Les montants saisis restent sur l'iPhone.",
+    },
+    disclaimer:
+      "Les calculs TVA sont indicatifs et ne remplacent pas une déclaration officielle, un expert-comptable ou un conseil fiscal adapté.",
+  },
+  "revenu-net-auto-entrepreneur": {
+    slug: "revenu-net-auto-entrepreneur",
+    path: "/revenu-net-auto-entrepreneur",
+    title: "Revenu net auto-entrepreneur",
+    metaTitle: "Revenu net auto-entrepreneur et charges - Calculette Fiscale",
+    metaDescription:
+      "Estimez ce qu'il reste après charges en micro-entreprise avec une calculette iPhone pour freelances, indépendants et auto-entrepreneurs.",
+    eyebrow: "Micro-entreprise",
+    headline: "Revenu net auto-entrepreneur : voir ce qu'il reste",
+    intro:
+      "Un chiffre d'affaires ne dit pas ce que vous gardez. Calculette Fiscale aide à estimer le net après cotisations pour les profils micro pris en charge en V1.",
+    image: "/images/screenshots/net-pro.png",
+    imageAlt: "Capture iPhone du mode Net pro de Calculette Fiscale",
+    primaryCta: "Estimer mon net sur iPhone",
+    sections: [
+      {
+        title: "Pour décider avant de facturer",
+        body:
+          "Le mode Net pro part d'un montant de chiffre d'affaires et affiche une estimation du net, avec les lignes qui expliquent ce qui est mis de côté.",
+        points: ["Micro-BIC vente", "Micro-BIC prestation", "Micro-BNC prestation"],
+      },
+      {
+        title: "Ce que l'app rend visible",
+        body:
+          "L'app distingue le montant HT, la TVA quand elle s'applique, les cotisations estimées et le net indicatif. La version Pro affiche aussi les formules et le jeu de règles utilisé.",
+      },
+      {
+        title: "Ce qui n'est pas couvert en V1",
+        body:
+          "La V1 ne calcule pas l'ACRE, la CFE, le barème progressif de l'impôt sur le revenu, la Cipav, les cas DOM ou les activités mixtes.",
+      },
+    ],
+    appPitch: {
+      title: "Pensée pour les indépendants qui décident vite",
+      body:
+        "Vous pouvez tester un montant, comparer un objectif net et garder un historique local sans créer de compte.",
+    },
+    disclaimer:
+      "Le revenu net affiché est une estimation indicative. Il ne remplace pas une déclaration URSSAF, une déclaration fiscale ou un conseil adapté.",
+  },
+  "calcul-marge-tva": {
+    slug: "calcul-marge-tva",
+    path: "/calcul-marge-tva",
+    title: "Calcul marge avec TVA",
+    metaTitle: "Calcul marge, taux de marge et TVA - Calculette Fiscale",
+    metaDescription:
+      "Comparez prix d'achat, prix de vente, marge brute HT, taux de marge, taux de marque et TVA nette depuis une calculette iPhone.",
+    eyebrow: "Prix et marge",
+    headline: "Calcul marge avec TVA : voir ce que rapporte une vente",
+    intro:
+      "Avant de vendre, il faut savoir si le prix couvre vraiment l'achat, la TVA et la marge attendue. Le mode Marge met les principaux chiffres au même endroit.",
+    image: "/images/screenshots/marge.png",
+    imageAlt: "Capture iPhone du mode Marge de Calculette Fiscale",
+    primaryCta: "Calculer ma marge sur iPhone",
+    sections: [
+      {
+        title: "Les chiffres à comparer",
+        body:
+          "Le mode Marge compare un prix d'achat et un prix de vente pour afficher la marge brute HT, le taux de marge, le taux de marque et la TVA nette.",
+        points: ["Prix d'achat", "Prix de vente", "TVA collectée et déductible"],
+      },
+      {
+        title: "Utile pour les décisions de prix",
+        body:
+          "Vous pouvez vérifier une vente avant de l'annoncer, tester un prix cible ou comprendre pourquoi un montant TTC flatteur ne donne pas forcément une marge suffisante.",
+      },
+      {
+        title: "Une aide au calcul, pas une comptabilité",
+        body:
+          "La marge réelle dépend aussi de vos frais, de vos remises, de votre stock, de votre régime TVA et de votre comptabilité. L'app reste un outil de calcul rapide.",
+      },
+    ],
+    appPitch: {
+      title: "Une lecture claire avant de vendre",
+      body:
+        "Calculette Fiscale rassemble TVA, marge et résultat principal dans une interface iPhone simple, avec historique local en Pro.",
+    },
+    disclaimer:
+      "Les résultats de marge sont indicatifs. Ils ne remplacent pas une comptabilité, une déclaration officielle ou un conseil adapté.",
+  },
+};
+
 export const homeContent: Record<Locale, HomeContent> = {
   fr: {
     locale: "fr",
@@ -111,15 +267,16 @@ export const homeContent: Record<Locale, HomeContent> = {
     hero: {
       eyebrow: "App iPhone pour montants français",
       title: "Calculette Fiscale",
-      subtitle: "HT, TTC, TVA, charges, net estimé et marge dans une calculette française simple.",
+      subtitle: "TVA, net pro, objectif net et marge pour décider plus vite.",
       body:
-        "L'app aide les indépendants, freelances et dirigeants de TPE à comprendre rapidement ce qu'il y a derrière un montant avant un devis, une vente ou une décision de prix.",
+        "L'app aide les indépendants, freelances et dirigeants de TPE à comprendre ce qu'il y a derrière un montant avant un devis, une vente ou une décision de prix.",
       appStoreReady: "Télécharger sur l'App Store",
       appStoreSoon: "Bientôt sur l'App Store",
     },
     sections: {
-      title: "Ce que couvre la V1",
-      intro: "Le site reste volontairement court pour la soumission Apple. L'app ira plus loin dans l'interface iPhone.",
+      title: "Quatre calculs pour vos montants du quotidien",
+      intro:
+        "La V1 couvre les usages qui reviennent avant un devis, une facture ou une décision de prix.",
       features: [
         {
           title: "TVA",
@@ -365,4 +522,8 @@ export function getPath(locale: Locale, page: PageKind) {
   }
 
   return language.homeHref;
+}
+
+export function getGuidePath(slug: GuideSlug) {
+  return guidePages[slug].path;
 }

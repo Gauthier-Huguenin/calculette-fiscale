@@ -1,14 +1,18 @@
 # Calculette Fiscale Web
 
-Site public minimal de Calculette Fiscale, construit avec Next.js App Router,
+Site public de Calculette Fiscale, construit avec Next.js App Router,
 TypeScript et Tailwind CSS.
 
-Le site existe d'abord pour fournir a Apple des pages publiques stables avant la
-publication de la V1 iOS.
+Le site fournit les pages publiques App Store Connect et des pages
+d'acquisition en francais pour les recherches liees a la TVA, au net
+auto-entrepreneur et a la marge.
 
 ## Pages
 
 - `/` : accueil en francais, langue par defaut.
+- `/calcul-tva-ht-ttc` : guide francais pour les intentions TVA, HT, TTC et facture.
+- `/revenu-net-auto-entrepreneur` : guide francais pour le net et les charges micro-entrepreneur.
+- `/calcul-marge-tva` : guide francais pour la marge, le taux de marge et la TVA nette.
 - `/privacy` : politique de confidentialite en francais.
 - `/support` : support en francais, URL recommandee pour App Store Connect.
 - `/en` : accueil en anglais.
@@ -17,6 +21,9 @@ publication de la V1 iOS.
 - `/robots.txt` et `/sitemap.xml` : fichiers publics pour l'indexation.
 - `/sitemap-gsc.xml` : sitemap simple a soumettre dans Google Search Console.
 - `/llms.txt` : resume court pour les moteurs de recherche IA.
+
+Les captures publiques de l'app vivent dans `public/images/screenshots/` et
+proviennent des exports App Store conserves dans `docs/releases/`.
 
 ## Configuration
 

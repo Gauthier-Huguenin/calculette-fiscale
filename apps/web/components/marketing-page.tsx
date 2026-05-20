@@ -1,8 +1,9 @@
 import Image from "next/image";
+import Link from "next/link";
 
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { appStoreUrl, homeContent, type Locale } from "@/lib/site-content";
+import { appStoreUrl, guideOrder, guidePages, homeContent, type Locale } from "@/lib/site-content";
 
 interface MarketingPageProps {
   locale: Locale;
@@ -10,13 +11,14 @@ interface MarketingPageProps {
 
 export function MarketingPage({ locale }: MarketingPageProps) {
   const content = homeContent[locale];
+  const guideLinks = guideOrder.map((slug) => guidePages[slug]);
 
   return (
     <div className="min-h-screen bg-coal text-ink">
       <SiteHeader locale={locale} />
 
       <main>
-        <section className="mx-auto grid w-full max-w-6xl gap-10 px-5 pb-16 pt-8 sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:pb-24 lg:pt-14">
+        <section className="mx-auto grid w-full max-w-6xl gap-10 px-5 pb-16 pt-8 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:pb-24 lg:pt-14">
           <div className="space-y-7">
             <p className="text-sm font-semibold uppercase tracking-[0.22em] text-gold">{content.hero.eyebrow}</p>
             <div className="space-y-5">
@@ -43,22 +45,26 @@ export function MarketingPage({ locale }: MarketingPageProps) {
             )}
           </div>
 
-          <div className="flex justify-center lg:justify-end">
-            <div className="w-full max-w-sm rounded-md border border-line bg-panel p-8">
+          <div className="grid grid-cols-2 items-end gap-4 sm:gap-5 lg:justify-items-end" aria-label="Captures de l'app Calculette Fiscale">
+            <div className="justify-self-end">
               <Image
-                src="/images/app-icon.png"
-                width={160}
-                height={160}
-                alt="Calculette Fiscale"
-                className="mx-auto h-40 w-40 rounded-[32px]"
+                src="/images/screenshots/ht-ttc.png"
+                width={1284}
+                height={2778}
+                alt="Mode TVA avec lignes HT, TVA et TTC"
+                className="h-auto w-full max-w-[210px] rounded-[28px] border border-line shadow-2xl shadow-black/40"
                 priority
               />
-              <div className="mt-8 grid grid-cols-2 gap-3 text-sm font-semibold text-ink/74">
-                <span className="rounded-md bg-coal px-3 py-3 text-center">HT</span>
-                <span className="rounded-md bg-coal px-3 py-3 text-center">TTC</span>
-                <span className="rounded-md bg-coal px-3 py-3 text-center">TVA</span>
-                <span className="rounded-md bg-coal px-3 py-3 text-center">Marge</span>
-              </div>
+            </div>
+            <div className="pb-10">
+              <Image
+                src="/images/screenshots/net-pro.png"
+                width={1284}
+                height={2778}
+                alt="Mode Net pro pour estimer un revenu après cotisations"
+                className="h-auto w-full max-w-[210px] rounded-[28px] border border-line shadow-2xl shadow-black/40"
+                priority
+              />
             </div>
           </div>
         </section>
@@ -79,6 +85,30 @@ export function MarketingPage({ locale }: MarketingPageProps) {
             </div>
           </div>
         </section>
+
+        {locale === "fr" ? (
+          <section className="mx-auto max-w-6xl px-5 py-14 sm:px-8">
+            <div className="max-w-3xl space-y-3">
+              <h2 className="text-3xl font-semibold text-ink">Guides rapides pour vos calculs</h2>
+              <p className="text-lg leading-8 text-ink/64">
+                {"Chaque guide part d'une question concrète et montre comment l'app peut aider avant de télécharger."}
+              </p>
+            </div>
+            <div className="mt-9 grid gap-4 md:grid-cols-3">
+              {guideLinks.map((guide) => (
+                <Link
+                  className="rounded-md border border-line bg-panel p-5 transition hover:border-gold/70 hover:bg-panel/80"
+                  href={guide.path}
+                  key={guide.slug}
+                >
+                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold">{guide.eyebrow}</p>
+                  <h3 className="mt-4 text-xl font-semibold text-ink">{guide.title}</h3>
+                  <p className="mt-3 leading-7 text-ink/66">{guide.metaDescription}</p>
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <section className="mx-auto grid max-w-6xl gap-8 px-5 py-14 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
           <div>

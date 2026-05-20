@@ -1,6 +1,15 @@
 import type { Metadata } from "next";
 
-import { getLanguage, getPath, languageOptions, siteUrl, type Locale, type PageKind } from "@/lib/site-content";
+import {
+  getLanguage,
+  getPath,
+  guidePages,
+  languageOptions,
+  siteUrl,
+  type GuideSlug,
+  type Locale,
+  type PageKind,
+} from "@/lib/site-content";
 
 interface SeoContent {
   title: string;
@@ -93,6 +102,50 @@ export function buildMetadata(locale: Locale, page: PageKind): Metadata {
     icons: {
       icon: image,
       apple: image,
+    },
+  };
+}
+
+export function buildGuideMetadata(slug: GuideSlug): Metadata {
+  const guide = guidePages[slug];
+
+  return {
+    metadataBase: new URL(siteUrl),
+    title: guide.metaTitle,
+    description: guide.metaDescription,
+    applicationName: "Calculette Fiscale",
+    alternates: {
+      canonical: guide.path,
+      languages: {
+        fr: `${siteUrl}${guide.path}`,
+        "x-default": `${siteUrl}${guide.path}`,
+      },
+    },
+    openGraph: {
+      title: guide.metaTitle,
+      description: guide.metaDescription,
+      url: guide.path,
+      siteName: "Calculette Fiscale",
+      images: [
+        {
+          url: guide.image,
+          width: 1284,
+          height: 2778,
+          alt: guide.imageAlt,
+        },
+      ],
+      locale: "fr_FR",
+      type: "article",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: guide.metaTitle,
+      description: guide.metaDescription,
+      images: [guide.image],
+    },
+    icons: {
+      icon: "/images/app-icon.png",
+      apple: "/images/app-icon.png",
     },
   };
 }
