@@ -19,12 +19,29 @@ Les captures App Store brutes prises localement vivent dans
 `docs/releases/app-store-screenshots/raw/`. Les exports finaux prepares pour
 App Store Connect vivent dans `docs/releases/app-store-screenshots/canva/`.
 
+## Captures RAW
+
+Les captures RAW iOS 1.0.1 utilisent des fixtures `DEBUG` lancees avec
+`CALCULETTE_SCREENSHOT_SCENARIO`.
+
+Scenarios disponibles :
+
+- `01-tva-facture`
+- `02-net-pro`
+- `03-objectif-net`
+- `04-marge`
+- `05-historique-local`
+- `06-personnalisation`
+
+Format de reference : simulateur iPhone 17 Pro en portrait, `1206 x 2622`.
+
 ## Convention
 
 Chaque version doit avoir son propre fichier :
 
 ```text
 docs/releases/1.0.0.md
+docs/releases/1.0.1.md
 ```
 
 La release GitHub publique ne doit etre creee qu'apres validation et publication

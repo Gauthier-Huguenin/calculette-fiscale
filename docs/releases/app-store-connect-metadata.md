@@ -1,16 +1,18 @@
 # Metadonnees App Store Connect
 
-Source : preparation interne pour App Store Connect, le
-2026-05-15T12:31:04+0400.
+Source : preparation interne pour App Store Connect, mise a jour pour la version
+1.0.1 le 2026-05-21T20:58:53+0400.
 
 Ce fichier archive les champs editoriaux et de configuration a renseigner pour
-la publication initiale de Calculette Fiscale. Les coordonnees personnelles de
+la publication de Calculette Fiscale. Les coordonnees personnelles de
 verification Apple ne sont pas archivees en clair dans le depot.
 
 ## Sources Apple utilisees
 
 - Metadonnees App Store Connect :
   https://developer.apple.com/help/app-store-connect/reference/app-information/platform-version-information
+- Proprietes localisables et modifiables :
+  https://developer.apple.com/help/app-store-connect/reference/app-information/required-localizable-and-editable-properties
 - Specifications des captures :
   https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications
 - Confidentialite App Store :
@@ -18,7 +20,7 @@ verification Apple ne sont pas archivees en clair dans le depot.
 - Achats integres :
   https://developer.apple.com/help/app-store-connect/reference/in-app-purchases-and-subscriptions/in-app-purchase-information
 
-Limites Apple retenues au 2026-05-15 :
+Limites Apple retenues au 2026-05-21 :
 
 - Nom : 30 caracteres maximum.
 - Sous-titre : 30 caracteres maximum.
@@ -31,11 +33,11 @@ Limites Apple retenues au 2026-05-15 :
 ## Informations app globales
 
 - Nom : `Calculette Fiscale`
-- Sous-titre : `TVA, charges & net`
+- Sous-titre : `TVA, net pro & marge`
 - Bundle ID : `io.hgnn.calculettefiscale`
 - SKU recommande : `io.hgnn.calculettefiscale`
-- Version marketing : `1.0.0`
-- Build : `1`
+- Version marketing : `1.0.1`
+- Build : `2`
 - Cible minimum : `iOS 17.0`
 - Apple Developer Team : `393ZW5QCU6`
 - Langue principale : `Francais`
@@ -65,23 +67,23 @@ Compteur : 18 caracteres sur 30.
 ### Sous-titre
 
 ```text
-TVA, charges & net
+TVA, net pro & marge
 ```
 
-Compteur : 18 caracteres sur 30.
+Compteur : 20 caracteres sur 30.
 
 ### Texte promotionnel
 
 ```text
-HT, TTC, TVA, net et marge dans une calculette francaise, sans compte, sans pub et sans abonnement.
+TVA, net pro, objectif net et marge dans une calculette française. Sans compte, sans pub, sans abonnement.
 ```
 
-Compteur : 99 caracteres sur 170.
+Compteur : 106 caracteres sur 170.
 
 ### Mots-cles
 
 ```text
-tva,ttc,horstaxe,micro,autoentrepreneur,freelance,charges,net,marge,urssaf,devis,prix,impot
+ttc,horstaxe,micro,autoentrepreneur,freelance,charges,urssaf,devis,prix,facture,cotisations
 ```
 
 Compteur : 91 octets sur 100.
@@ -89,43 +91,44 @@ Compteur : 91 octets sur 100.
 Notes ASO :
 
 - Ne pas repeter `Calculette Fiscale`, deja couvert par le nom.
+- Ne pas repeter `TVA`, `net` ou `marge`, deja couverts par le sous-titre.
 - `HT` n'est pas ajoute seul car Apple demande des mots-cles de plus de deux
   caracteres. `horstaxe` couvre l'intention de recherche.
-- La fiche doit garder l'angle `TVA, net, marge`, plus differenciant qu'une app
-  TVA pure.
+- La fiche garde l'angle `TVA, net pro, marge`, plus differenciant qu'une app
+  TVA pure et plus prudent qu'une promesse de declaration fiscale.
 
 ### Description
 
 ```text
-Calculette Fiscale est la calculette francaise pour comprendre rapidement ce qu'il y a derriere un montant : HT, TTC, TVA, charges, net estime et marge.
+Calculette Fiscale est la calculette française pour comprendre vite ce qu'il y a derrière un montant : TVA, HT, TTC, net pro estimé, objectif net et marge.
 
-Elle a ete pensee pour les independants, freelances, micro-entrepreneurs, dirigeants de TPE, artisans, commercants et consultants qui manipulent des montants toute la journee et veulent decider vite, sans ouvrir un tableur.
+Elle aide les indépendants, freelances, micro-entrepreneurs, dirigeants de TPE, artisans, commerçants et consultants à préparer un devis, vérifier un prix ou lire une marge sans ouvrir un tableur.
 
 TVA
-Passez du HT au TTC, du TTC au HT, ou calculez uniquement la TVA. Les taux francais usuels sont inclus : 20 %, 10 %, 5,5 % et 2,1 %. Vous pouvez aussi saisir un taux personnalise.
+Passez du HT au TTC, du TTC au HT, ou calculez uniquement la TVA. Les taux français usuels sont inclus : 20 %, 10 %, 5,5 % et 2,1 %. Vous pouvez aussi saisir un taux personnalisé.
 
 NET PRO
-Estimez ce qu'il reste apres cotisations pour les profils micro pris en charge dans la V1 : Micro-BIC vente, Micro-BIC prestation et Micro-BNC prestation. L'app distingue le chiffre d'affaires HT, la TVA a mettre de cote, les cotisations estimees et le net indicatif.
+Estimez ce qu'il reste après cotisations pour les profils micro pris en charge dans la V1 : Micro-BIC vente, Micro-BIC prestation et Micro-BNC prestation. L'app distingue le chiffre d'affaires HT, la TVA à mettre de côté, les cotisations estimées et le net indicatif.
 
 OBJECTIF NET
-Partez du montant que vous voulez garder et obtenez une estimation du montant HT a facturer, avec le TTC si la TVA s'applique. Pratique pour preparer un devis, cadrer une mission ou verifier un prix avant de l'annoncer.
+Partez du montant que vous voulez garder et obtenez une estimation du montant HT à facturer, avec le TTC si la TVA s'applique. Pratique pour cadrer une mission, préparer un devis ou vérifier un prix avant de l'annoncer.
 
 MARGE
-Comparez un prix d'achat et un prix de vente. Calculette Fiscale calcule la marge brute HT, le taux de marge, le taux de marque, la TVA collectee, la TVA deductible et la TVA nette.
+Comparez un prix d'achat et un prix de vente. Calculette Fiscale calcule la marge brute HT, le taux de marge, le taux de marque, la TVA collectée, la TVA déductible et la TVA nette.
 
-FORMULES ET BAREMES
-Les resultats Pro affichent le detail du calcul, la formule utilisee, les avertissements et l'identifiant du jeu de regles fiscales. Les baremes V1 sont dates et sources dans la documentation interne de l'app.
+FORMULES
+Les résultats Pro affichent le détail du calcul, la formule utilisée, les avertissements utiles et l'identifiant du jeu de règles fiscales. Les barèmes V1 sont datés et sourcés dans la documentation interne de l'app.
 
-CONFIDENTIALITE
-Pas de compte. Pas de publicite. Pas de backend. Les montants et l'historique restent stockes localement sur votre iPhone. L'achat Pro utilise StoreKit 2, le systeme d'achat integre d'Apple.
+CONFIDENTIALITÉ
+Pas de compte. Pas de publicité. Pas de backend. Les montants et l'historique restent stockés localement sur votre iPhone. L'achat Pro utilise StoreKit 2, le système d'achat intégré d'Apple.
 
 GRATUIT, PUIS PRO SI VOUS EN AVEZ BESOIN
-La calculette standard, le mode TVA et la copie du resultat principal sont gratuits. La version Pro debloque Net pro, Objectif net, Marge, l'historique et le detail complet des formules avec un achat unique, sans abonnement.
+La calculette standard, le mode TVA et la copie du résultat principal sont gratuits. La version Pro débloque Net pro, Objectif net, Marge, l'historique et le détail complet des formules avec un achat unique, sans abonnement.
 
-Calculette Fiscale fournit des estimations indicatives. Elle ne remplace pas une declaration officielle, un expert-comptable ou un conseil fiscal adapte a votre situation.
+Calculette Fiscale fournit des estimations indicatives. Elle ne remplace pas une déclaration officielle, un expert-comptable ou un conseil fiscal adapté à votre situation.
 ```
 
-Compteur : 2 141 caracteres sur 4 000.
+Compteur : 2 113 caracteres sur 4 000.
 
 ## Achats integres
 
@@ -223,7 +226,7 @@ captures, avec le meme style visuel que l'app et du texte court.
    - Ecran : detail du calcul ou historique.
    - Objectif : rassurer sur la transparence et la confidentialite.
 
-Set brut capture le 2026-05-15 : 6 captures simulateur conservees dans
+Set brut capture le 2026-05-21 : 6 captures simulateur conservees dans
 `docs/releases/app-store-screenshots/raw/`. La cinquieme capture regroupe
 historique local et formules visibles. La sixieme montre les reglages
 personnalisables : taux de TVA, profil micro et options du calcul.

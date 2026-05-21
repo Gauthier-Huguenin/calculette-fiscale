@@ -45,10 +45,10 @@ Espaces prevus plus tard :
 - Scheme : `CalculetteFiscale`
 - Bundle identifier : `io.hgnn.calculettefiscale`
 - Langue V1 : francais
-- UI : SwiftUI
+- UI : SwiftUI, interface sombre avec écran principal épuré depuis `1.0.1`
 - Cible minimum : iOS 17
-- Version marketing : `1.0.0`
-- Build : `1`
+- Version marketing : `1.0.1`
+- Build : `2`
 - Domaine : calculs deterministes dans `Sources/Domain`, constantes fiscales versionnees avec le jeu de regles `fr-2026-v1-2026-05-14`
 - Etat local : `Sources/State`, historique encode en JSON dans `UserDefaults`, limite aux 50 derniers calculs
 - Monetisation : StoreKit 2 dans `Sources/Store`, achat unique non-consommable `pro_lifetime`, fichier local `Resources/CalculetteFiscale.storekit`
@@ -140,7 +140,7 @@ Configuration App Store Connect V1 publiee :
 ## Decisions retenues
 
 - Nom App Store : `Calculette Fiscale`.
-- Sous-titre ASO : `TVA, charges & net`.
+- Sous-titre ASO : `TVA, net pro & marge`.
 - Prix V1 Pro : 9,99 euros en achat unique.
 - Confidentialite : calculs locaux, pas de backend.
 - Repository : monorepo, extensible vers Android, Mac et web.

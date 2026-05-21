@@ -9,7 +9,7 @@ export interface SitemapEntry {
 }
 
 export const sitemapPages: PageKind[] = ["home", "privacy", "support"];
-export const sitemapLastModified = new Date("2026-05-20");
+export const sitemapLastModified = new Date("2026-05-21");
 
 function buildPageAlternates(page: PageKind) {
   return Object.fromEntries([
