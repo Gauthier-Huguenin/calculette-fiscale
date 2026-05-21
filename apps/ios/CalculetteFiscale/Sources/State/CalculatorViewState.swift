@@ -94,6 +94,7 @@ struct CalculatorViewState: Equatable {
     var vatDeductibleOnPurchase = true
     var pendingOperator: ArithmeticOperator?
     var storedOperand: Decimal?
+    var arithmeticError: String?
     var shouldReplaceActiveText = false
     var history: [CalculationHistoryEntry] = CalculationHistoryStore.load()
 
@@ -129,6 +130,7 @@ struct CalculatorViewState: Equatable {
 
     mutating func selectMode(_ mode: CalculationMode) {
         selectedMode = mode
+        arithmeticError = nil
 
         switch mode {
         case .vat, .independent, .netGoal:
@@ -141,12 +143,14 @@ struct CalculatorViewState: Equatable {
     mutating func selectVATRate(id: String) {
         usesCustomVATRate = false
         selectedVATRateId = id
+        arithmeticError = nil
         restorePrimaryField()
     }
 
     mutating func selectCustomVATRate() {
         usesCustomVATRate = true
         activeEntryField = .customVATRate
+        arithmeticError = nil
         if customVATRateText.isEmpty {
             customVATRateText = "20"
         }
@@ -155,9 +159,12 @@ struct CalculatorViewState: Equatable {
     mutating func selectMarginField(_ field: MarginInputField) {
         activeMarginField = field
         activeEntryField = field == .purchase ? .marginPurchase : .marginSale
+        arithmeticError = nil
     }
 
     mutating func tapKey(_ key: String) {
+        arithmeticError = nil
+
         switch key {
         case "C":
             setActiveText("0")
@@ -183,6 +190,7 @@ struct CalculatorViewState: Equatable {
     }
 
     mutating func toggleFranchiseInBase() {
+        arithmeticError = nil
         franchiseInBase.toggle()
     }
 
@@ -373,6 +381,7 @@ struct CalculatorViewState: Equatable {
         storedOperand = decimal(from: activeText)
         pendingOperator = ArithmeticOperator(rawValue: key)
         shouldReplaceActiveText = true
+        arithmeticError = nil
     }
 
     private mutating func evaluatePendingOperation() {
@@ -392,16 +401,29 @@ struct CalculatorViewState: Equatable {
         case .multiply:
             result = storedOperand * currentOperand
         case .divide:
-            result = currentOperand == 0 ? 0 : storedOperand / currentOperand
+            guard currentOperand != 0 else {
+                let fallback = inputText(from: storedOperand)
+                setActiveText(fallback)
+                arithmeticError = "Division par zéro impossible."
+                self.pendingOperator = nil
+                self.storedOperand = nil
+                shouldReplaceActiveText = true
+                return
+            }
+
+            result = storedOperand / currentOperand
+            arithmeticError = nil
         }
 
         setActiveText(inputText(from: result))
         self.pendingOperator = nil
         self.storedOperand = nil
         shouldReplaceActiveText = true
+        arithmeticError = nil
     }
 
     private mutating func setActiveText(_ value: String) {
+        arithmeticError = nil
         switch activeEntryField {
         case .amount:
             amountText = value
@@ -425,11 +447,17 @@ struct CalculatorViewState: Equatable {
     private func inputText(from value: Decimal) -> String {
         let rounded = value.rounded(scale: 6)
         let number = rounded as NSDecimalNumber
+        return InputFormatterFactory.inputText.string(from: number) ?? "0"
+    }
+}
+
+private enum InputFormatterFactory {
+    static let inputText: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.locale = Locale(identifier: "fr_FR")
         formatter.numberStyle = .decimal
         formatter.minimumFractionDigits = 0
         formatter.maximumFractionDigits = 6
-        return formatter.string(from: number) ?? "0"
-    }
+        return formatter
+    }()
 }

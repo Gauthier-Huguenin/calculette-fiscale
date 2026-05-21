@@ -227,6 +227,40 @@ final class VATCalculatorTests: XCTestCase {
         XCTAssertCurrency(state.currentResult().lines.first { $0.id == "ht" }?.amount ?? 0, "15.00")
     }
 
+    func testNetGoalSummaryOmitsTTCLineWhenFranchiseIsEnabled() {
+        var state = CalculatorViewState()
+
+        state.selectMode(.netGoal)
+        state.franchiseInBase = true
+        state.tapKey("5")
+        state.tapKey("0")
+        state.tapKey("0")
+
+        let result = state.currentResult()
+        let summaryLines = DecisionSummary.lines(for: state, result: result, ruleSet: .french2026)
+
+        XCTAssertFalse(summaryLines.contains(where: { $0.contains("TTC indicatif") }))
+        XCTAssertFalse(result.lines.contains(where: { $0.id == "required_ttc" }))
+    }
+
+    func testStateDivisionByZeroShowsExplicitArithmeticError() {
+        var state = CalculatorViewState()
+
+        state.tapKey("1")
+        state.tapKey("0")
+        state.tapKey("÷")
+        state.tapKey("0")
+        state.tapKey("=")
+
+        XCTAssertEqual(state.amountText, "10")
+        XCTAssertEqual(state.arithmeticError, "Division par zéro impossible.")
+        XCTAssertNil(state.pendingOperator)
+        XCTAssertNil(state.storedOperand)
+
+        let summaryLines = DecisionSummary.lines(for: state, result: state.currentResult(), ruleSet: .french2026)
+        XCTAssertEqual(summaryLines.first, "Division par zéro impossible.")
+    }
+
     func testStateHandlesPercentKey() {
         var state = CalculatorViewState()
 
@@ -272,6 +306,27 @@ final class VATCalculatorTests: XCTestCase {
         XCTAssertLine(result, "social", equals: "212.00")
         XCTAssertLine(result, "vfl", equals: "17.00")
         XCTAssertCurrency(result.mainAmount, "771.00")
+    }
+
+    func testRapidInputKeepsSummaryReadable() {
+        var state = CalculatorViewState()
+
+        measure {
+            for _ in 0..<150 {
+                state.tapKey("1")
+                state.tapKey("2")
+                state.tapKey("3")
+                state.tapKey("⌫")
+                _ = DecisionSummary.lines(
+                    for: state,
+                    result: state.currentResult(),
+                    ruleSet: .french2026
+                )
+            }
+        }
+
+        XCTAssertNil(state.arithmeticError)
+        XCTAssertFalse(state.amountText.isEmpty)
     }
 
     func testStateMovedMarginSettingsKeepSameCalculationInput() {
