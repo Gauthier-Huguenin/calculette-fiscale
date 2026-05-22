@@ -11,6 +11,7 @@ Il sert de source de verite interne pour :
 - les informations de build, branche, commit et soumission Apple ;
 - les textes de verification Apple ;
 - les informations d'achat integre ;
+- les notes de lancement et d'experimentation Apple Ads ;
 - les brouillons des pages publiques support, confidentialite et marketing ;
 - les tests realises avant publication ;
 - les points encore a confirmer.
