@@ -10,11 +10,35 @@ interface MarketingPageProps {
   locale: Locale;
 }
 
+const appStoreBadgeByLocale: Record<
+  Locale,
+  {
+    alt: string;
+    height: number;
+    src: string;
+    width: number;
+  }
+> = {
+  fr: {
+    alt: "Télécharger dans l'App Store",
+    height: 40,
+    src: "/images/app-store-badge-fr.svg",
+    width: 127,
+  },
+  en: {
+    alt: "Download on the App Store",
+    height: 40,
+    src: "/images/app-store-badge-en.svg",
+    width: 120,
+  },
+};
+
 export function MarketingPage({ locale }: MarketingPageProps) {
   const content = homeContent[locale];
   const author = authorContent[locale];
   const language = getLanguage(locale);
   const guideLinks = guideOrder.map((slug) => guidePages[slug]);
+  const appStoreBadge = appStoreBadgeByLocale[locale];
 
   return (
     <div className="min-h-screen bg-coal text-ink">
@@ -34,22 +58,26 @@ export function MarketingPage({ locale }: MarketingPageProps) {
               </p>
               <p className="max-w-2xl text-lg leading-8 text-ink/66">{content.hero.body}</p>
             </div>
-            {appStoreUrl ? (
-              <a
-                className="inline-flex min-h-12 items-center rounded-md bg-gold px-5 text-base font-semibold text-coal"
-                href={appStoreUrl}
-                rel="noreferrer"
-              >
-                {content.hero.appStoreReady}
-              </a>
-            ) : (
-              <p className="inline-flex min-h-12 items-center rounded-md border border-line px-5 text-base font-semibold text-ink/78">
-                {content.hero.appStoreSoon}
-              </p>
-            )}
-            <Link className="inline-flex text-sm font-semibold text-ink/58 hover:text-ink" href={language.authorHref}>
-              {author.homeMention}
-            </Link>
+            <div className="flex flex-col items-start gap-5 pt-1">
+              {appStoreUrl ? (
+                <a className="inline-flex rounded-md" href={appStoreUrl} rel="noreferrer">
+                  <Image
+                    src={appStoreBadge.src}
+                    width={appStoreBadge.width}
+                    height={appStoreBadge.height}
+                    alt={appStoreBadge.alt}
+                    className="h-[46px] w-auto"
+                  />
+                </a>
+              ) : (
+                <p className="inline-flex min-h-12 items-center rounded-md border border-line px-5 text-base font-semibold text-ink/78">
+                  {content.hero.appStoreSoon}
+                </p>
+              )}
+              <Link className="inline-flex text-sm font-semibold text-ink/58 hover:text-ink" href={language.authorHref}>
+                {author.homeMention}
+              </Link>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 items-end gap-4 sm:gap-5 lg:justify-items-end" aria-label="Captures de l'app Calculette Fiscale">
