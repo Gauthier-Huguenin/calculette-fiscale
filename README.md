@@ -92,6 +92,10 @@ npm run lint:web
 
 Coolify doit cibler `apps/web` comme dossier applicatif.
 
+Le depot n'utilise pas GitHub Actions. Le build du site web est realise par
+Coolify sur le VPS depuis `apps/web`. Les builds et tests iOS restent des
+commandes locales a lancer avec Xcode ou `xcodebuild`.
+
 - Runtime variable : `NIXPACKS_NODE_VERSION=22.13.0`
 - Install command : `npm ci --include=dev --no-audit --no-fund`
 - Build command : `npm run build`

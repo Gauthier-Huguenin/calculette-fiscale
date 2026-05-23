@@ -72,6 +72,9 @@ npm run lint
 
 Configurer Coolify sur le dossier `apps/web`.
 
+Aucune CI GitHub Actions n'est active pour ce depot. Le build web est fait par
+Coolify sur le VPS, directement depuis ce dossier applicatif.
+
 - Runtime variable : `NIXPACKS_NODE_VERSION=22.13.0`
 - Install command : `npm ci --include=dev --no-audit --no-fund`
 - Build command : `npm run build`

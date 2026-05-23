@@ -64,6 +64,10 @@ Calculette Fiscale a Gauthier Huguenin. Elle expose aussi un balisage JSON-LD
 
 Configurer Coolify sur le dossier applicatif `apps/web`.
 
+Le depot ne doit pas utiliser GitHub Actions pour builder ou tester. Le site web
+est build par Coolify sur le VPS, et l'app iOS reste verifiee manuellement en
+local avec Xcode ou `xcodebuild`.
+
 - Runtime variable : `NIXPACKS_NODE_VERSION=22.13.0`
 - Install command : `npm ci --include=dev --no-audit --no-fund`
 - Build command : `npm run build`
