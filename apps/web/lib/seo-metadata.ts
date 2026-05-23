@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import {
+  authorContent,
   getLanguage,
   getPath,
   guidePages,
@@ -51,6 +52,16 @@ const seo: Record<PageKind, Record<Locale, SeoContent>> = {
       title: "Support - Calculette Fiscale",
       description:
         "Contact Calculette Fiscale support for the iOS app, Pro purchase, privacy and version 1 limits.",
+    },
+  },
+  author: {
+    fr: {
+      title: authorContent.fr.metaTitle,
+      description: authorContent.fr.metaDescription,
+    },
+    en: {
+      title: authorContent.en.metaTitle,
+      description: authorContent.en.metaDescription,
     },
   },
 };

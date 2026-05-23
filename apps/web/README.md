@@ -13,9 +13,11 @@ auto-entrepreneur et a la marge.
 - `/calcul-tva-ht-ttc` : guide francais pour les intentions TVA, HT, TTC et facture.
 - `/revenu-net-auto-entrepreneur` : guide francais pour le net et les charges micro-entrepreneur.
 - `/calcul-marge-tva` : guide francais pour la marge, le taux de marge et la TVA nette.
+- `/gauthier-huguenin` : page auteur francaise pour relier l'app a son createur.
 - `/privacy` : politique de confidentialite en francais.
 - `/support` : support en francais, URL recommandee pour App Store Connect.
 - `/en` : accueil en anglais.
+- `/en/gauthier-huguenin` : page auteur en anglais.
 - `/en/privacy` : politique de confidentialite en anglais.
 - `/en/support` : support en anglais.
 - `/robots.txt` et `/sitemap.xml` : fichiers publics pour l'indexation.
@@ -24,6 +26,10 @@ auto-entrepreneur et a la marge.
 
 Les captures publiques de l'app vivent dans `public/images/screenshots/` et
 proviennent des exports App Store conserves dans `docs/releases/`.
+
+Les pages publiques exposent des donnees structurees JSON-LD pour l'app
+`MobileApplication`, les guides `Article` et la page auteur `ProfilePage` de
+Gauthier Huguenin.
 
 ## Configuration
 

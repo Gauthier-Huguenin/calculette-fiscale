@@ -8,8 +8,8 @@ export interface SitemapEntry {
   alternates: Record<string, string>;
 }
 
-export const sitemapPages: PageKind[] = ["home", "privacy", "support"];
-export const sitemapLastModified = new Date("2026-05-21");
+export const sitemapPages: PageKind[] = ["home", "privacy", "support", "author"];
+export const sitemapLastModified = new Date("2026-05-23");
 
 function buildPageAlternates(page: PageKind) {
   return Object.fromEntries([

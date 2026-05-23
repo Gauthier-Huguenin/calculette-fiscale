@@ -3,7 +3,8 @@ import Link from "next/link";
 
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { appStoreUrl, guideOrder, guidePages, homeContent, type Locale } from "@/lib/site-content";
+import { JsonLd, buildMobileApplicationJsonLd } from "@/lib/structured-data";
+import { appStoreUrl, authorContent, getLanguage, guideOrder, guidePages, homeContent, type Locale } from "@/lib/site-content";
 
 interface MarketingPageProps {
   locale: Locale;
@@ -11,10 +12,13 @@ interface MarketingPageProps {
 
 export function MarketingPage({ locale }: MarketingPageProps) {
   const content = homeContent[locale];
+  const author = authorContent[locale];
+  const language = getLanguage(locale);
   const guideLinks = guideOrder.map((slug) => guidePages[slug]);
 
   return (
     <div className="min-h-screen bg-coal text-ink">
+      <JsonLd data={buildMobileApplicationJsonLd(locale)} />
       <SiteHeader locale={locale} />
 
       <main>
@@ -43,6 +47,9 @@ export function MarketingPage({ locale }: MarketingPageProps) {
                 {content.hero.appStoreSoon}
               </p>
             )}
+            <Link className="inline-flex text-sm font-semibold text-ink/58 hover:text-ink" href={language.authorHref}>
+              {author.homeMention}
+            </Link>
           </div>
 
           <div className="grid grid-cols-2 items-end gap-4 sm:gap-5 lg:justify-items-end" aria-label="Captures de l'app Calculette Fiscale">

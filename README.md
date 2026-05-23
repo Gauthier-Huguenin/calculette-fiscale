@@ -75,9 +75,11 @@ Le site public vit dans `apps/web`.
 - Anglais : routes sous `/en`.
 - URL publique cible : `https://calculette.tax`.
 - Pages App Store Connect : `/privacy` et `/support`.
+- Page auteur SEO : `/gauthier-huguenin` et `/en/gauthier-huguenin`.
 - Analytics web : Umami auto-heberge, sans cookies, configure via variables publiques.
 - Donnees app : pas de backend et aucun envoi de montant ou de profil.
 - Indexation : `/sitemap.xml` standard et `/sitemap-gsc.xml` pour Google Search Console.
+- Donnees structurees : `MobileApplication`, `Article` et page `ProfilePage` pour Gauthier Huguenin.
 
 Commandes depuis la racine :
 

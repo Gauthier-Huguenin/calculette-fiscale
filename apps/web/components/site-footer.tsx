@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { getLanguage, supportEmail, type Locale } from "@/lib/site-content";
+import { authorContent, getLanguage, supportEmail, type Locale } from "@/lib/site-content";
 
 interface SiteFooterProps {
   locale: Locale;
@@ -20,6 +20,9 @@ export function SiteFooter({ locale }: SiteFooterProps) {
           </Link>
           <Link className="hover:text-ink" href={language.supportHref}>
             Support
+          </Link>
+          <Link className="hover:text-ink" href={language.authorHref}>
+            {authorContent[locale].footerLabel}
           </Link>
           <a className="hover:text-ink" href={`mailto:${supportEmail}`}>
             {supportEmail}

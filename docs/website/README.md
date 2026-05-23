@@ -13,6 +13,7 @@ maintenant aussi de surface d'acquisition organique :
 - fournir une politique de confidentialite publique ;
 - fournir une page support avec contact visible ;
 - proposer des pages SEO en francais pour les principaux cas d'usage ;
+- relier l'app a son createur, Gauthier Huguenin, via une page auteur discrete ;
 - proposer le francais par defaut et l'anglais sous `/en` ;
 - utiliser un tracking web Umami auto-heberge sans cookies ;
 - ne pas ajouter de publicite, de formulaire ou de backend applicatif.
@@ -35,9 +36,11 @@ apps/
 - `https://calculette.tax/calcul-tva-ht-ttc`
 - `https://calculette.tax/revenu-net-auto-entrepreneur`
 - `https://calculette.tax/calcul-marge-tva`
+- `https://calculette.tax/gauthier-huguenin`
 - `https://calculette.tax/privacy`
 - `https://calculette.tax/support`
 - `https://calculette.tax/en`
+- `https://calculette.tax/en/gauthier-huguenin`
 - `https://calculette.tax/en/privacy`
 - `https://calculette.tax/en/support`
 - `https://calculette.tax/robots.txt`
@@ -51,6 +54,11 @@ volontairement simple.
 
 Les pages d'acquisition restent en francais uniquement pour la V1. Elles
 utilisent les captures App Store publiees dans `apps/web/public/images/screenshots/`.
+
+La page auteur `/gauthier-huguenin` est le signal principal pour associer
+Calculette Fiscale a Gauthier Huguenin. Elle expose aussi un balisage JSON-LD
+`ProfilePage` et les pages d'app ou de guides pointent vers la meme entite
+`Person`.
 
 ## Deploiement Coolify
 

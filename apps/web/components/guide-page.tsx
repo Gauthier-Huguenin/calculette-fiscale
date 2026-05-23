@@ -3,7 +3,8 @@ import Link from "next/link";
 
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { appStoreUrl, guideOrder, guidePages, type GuideSlug } from "@/lib/site-content";
+import { JsonLd, buildGuideArticleJsonLd } from "@/lib/structured-data";
+import { appStoreUrl, authorContent, guideOrder, guidePages, type GuideSlug } from "@/lib/site-content";
 
 interface GuidePageProps {
   slug: GuideSlug;
@@ -15,6 +16,7 @@ export function GuidePage({ slug }: GuidePageProps) {
 
   return (
     <div className="min-h-screen bg-coal text-ink">
+      <JsonLd data={buildGuideArticleJsonLd(slug)} />
       <SiteHeader locale="fr" />
 
       <main>
@@ -40,6 +42,9 @@ export function GuidePage({ slug }: GuidePageProps) {
                   {guide.primaryCta}
                 </a>
               ) : null}
+              <Link className="inline-flex text-sm font-semibold text-ink/58 hover:text-ink" href="/gauthier-huguenin">
+                {authorContent.fr.guideMention}
+              </Link>
             </div>
 
             <div className="flex justify-center lg:justify-end">

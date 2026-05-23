@@ -1,5 +1,5 @@
 export type Locale = "fr" | "en";
-export type PageKind = "home" | "privacy" | "support";
+export type PageKind = "home" | "privacy" | "support" | "author";
 export type GuideSlug = "calcul-tva-ht-ttc" | "revenu-net-auto-entrepreneur" | "calcul-marge-tva";
 
 export interface LanguageOption {
@@ -10,6 +10,7 @@ export interface LanguageOption {
   homeHref: string;
   privacyHref: string;
   supportHref: string;
+  authorHref: string;
   ogLocale: string;
 }
 
@@ -95,6 +96,31 @@ export interface SupportContent {
   faq: QuestionAnswer[];
 }
 
+export interface AuthorLink {
+  label: string;
+  href: string;
+}
+
+export interface AuthorContent {
+  locale: Locale;
+  metaTitle: string;
+  metaDescription: string;
+  eyebrow: string;
+  title: string;
+  role: string;
+  intro: string;
+  body: string;
+  appTitle: string;
+  appBody: string;
+  factsTitle: string;
+  facts: string[];
+  linksTitle: string;
+  links: AuthorLink[];
+  homeMention: string;
+  guideMention: string;
+  footerLabel: string;
+}
+
 export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://calculette.tax").replace(/\/$/, "");
 export const appStoreUrl =
   process.env.NEXT_PUBLIC_APP_STORE_URL ||
@@ -103,6 +129,10 @@ export const umamiScriptUrl = process.env.NEXT_PUBLIC_UMAMI_SCRIPT_URL?.trim() |
 export const umamiWebsiteId = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID?.trim() || "";
 export const supportEmail = "support@calculette.tax";
 export const defaultLocale: Locale = "fr";
+export const authorName = "Gauthier Huguenin";
+export const authorWebsiteUrl = "https://hgnn.io/";
+export const authorLinkedInUrl = "https://fr.linkedin.com/in/gauthierhuguenin";
+export const authorSameAs = [authorWebsiteUrl, authorLinkedInUrl];
 
 export const guideOrder: GuideSlug[] = [
   "calcul-tva-ht-ttc",
@@ -119,6 +149,7 @@ export const languageOptions: LanguageOption[] = [
     homeHref: "/",
     privacyHref: "/privacy",
     supportHref: "/support",
+    authorHref: "/gauthier-huguenin",
     ogLocale: "fr_FR",
   },
   {
@@ -129,6 +160,7 @@ export const languageOptions: LanguageOption[] = [
     homeHref: "/en",
     privacyHref: "/en/privacy",
     supportHref: "/en/support",
+    authorHref: "/en/gauthier-huguenin",
     ogLocale: "en_US",
   },
 ];
@@ -362,6 +394,69 @@ export const homeContent: Record<Locale, HomeContent> = {
   },
 };
 
+export const authorContent: Record<Locale, AuthorContent> = {
+  fr: {
+    locale: "fr",
+    metaTitle: "Gauthier Huguenin - Créateur de Calculette Fiscale",
+    metaDescription:
+      "Gauthier Huguenin est le créateur de Calculette Fiscale, une app iPhone française pour calculer TVA, net pro et marge sans compte.",
+    eyebrow: "Créateur de l'app",
+    title: "Gauthier Huguenin",
+    role: "Créateur et développeur de Calculette Fiscale",
+    intro:
+      "Gauthier Huguenin conçoit Calculette Fiscale comme une app iPhone simple, locale et sans compte pour aider les indépendants à vérifier leurs montants français.",
+    body:
+      "Le site présente les limites de l'app, les calculs couverts en V1 et les choix de confidentialité. Les montants fiscaux restent calculés de façon déterministe dans l'app, sans backend et sans envoi au développeur.",
+    appTitle: "À propos de Calculette Fiscale",
+    appBody:
+      "Calculette Fiscale couvre les calculs HT, TTC, TVA, net pro, objectif net et marge pour des décisions rapides avant un devis, une facture ou une vente.",
+    factsTitle: "Repères",
+    facts: [
+      "App iOS native en SwiftUI",
+      "Calculs fiscaux indicatifs et déterministes",
+      "Aucun compte, aucune publicité, aucun backend applicatif",
+    ],
+    linksTitle: "Profils publics",
+    links: [
+      { label: "Site professionnel HGNN", href: authorWebsiteUrl },
+      { label: "LinkedIn", href: authorLinkedInUrl },
+    ],
+    homeMention: "Créée par Gauthier Huguenin.",
+    guideMention: "Guide publié par Gauthier Huguenin, créateur de Calculette Fiscale.",
+    footerLabel: "Gauthier Huguenin",
+  },
+  en: {
+    locale: "en",
+    metaTitle: "Gauthier Huguenin - Creator of Calculette Fiscale",
+    metaDescription:
+      "Gauthier Huguenin is the creator of Calculette Fiscale, a French iPhone app for VAT, net estimates and margin calculations.",
+    eyebrow: "App creator",
+    title: "Gauthier Huguenin",
+    role: "Creator and developer of Calculette Fiscale",
+    intro:
+      "Gauthier Huguenin builds Calculette Fiscale as a simple, local and account-free iPhone app for checking French business amounts.",
+    body:
+      "The website documents the app limits, the calculations supported in version 1 and the privacy choices. Tax amounts are calculated deterministically inside the app, without a backend and without sending entries to the developer.",
+    appTitle: "About Calculette Fiscale",
+    appBody:
+      "Calculette Fiscale covers net, gross, VAT, professional net estimates, net goals and margin for quick decisions before a quote, invoice or sale.",
+    factsTitle: "Signals",
+    facts: [
+      "Native SwiftUI iOS app",
+      "Indicative and deterministic tax calculations",
+      "No account, no ads, no app backend",
+    ],
+    linksTitle: "Public profiles",
+    links: [
+      { label: "HGNN professional website", href: authorWebsiteUrl },
+      { label: "LinkedIn", href: authorLinkedInUrl },
+    ],
+    homeMention: "Created by Gauthier Huguenin.",
+    guideMention: "Guide published by Gauthier Huguenin, creator of Calculette Fiscale.",
+    footerLabel: "Gauthier Huguenin",
+  },
+};
+
 export const privacyContent: Record<Locale, PrivacyContent> = {
   fr: {
     locale: "fr",
@@ -519,6 +614,10 @@ export function getPath(locale: Locale, page: PageKind) {
 
   if (page === "support") {
     return language.supportHref;
+  }
+
+  if (page === "author") {
+    return language.authorHref;
   }
 
   return language.homeHref;
