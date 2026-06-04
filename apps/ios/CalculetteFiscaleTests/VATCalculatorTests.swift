@@ -229,6 +229,74 @@ final class VATCalculatorTests: XCTestCase {
         XCTAssertCurrency(state.currentResult().lines.first { $0.id == "ht" }?.amount ?? 0, "12.00")
     }
 
+    func testAmountInputDropsInitialZeroBeforeFirstDigit() {
+        XCTAssertEqual(AmountInputSanitizer.sanitize("05"), "5")
+        XCTAssertEqual(AmountInputSanitizer.sanitize("0005"), "5")
+    }
+
+    func testAmountInputFocusClearsStoredZeroBeforeTyping() {
+        var text = "0"
+        if AmountInputSanitizer.shouldClearOnFocus(text) {
+            text = ""
+        }
+
+        text = AmountInputSanitizer.sanitize(text + "5")
+
+        XCTAssertEqual(text, "5")
+    }
+
+    func testAmountInputKeepsPlainIntegerAmount() {
+        var state = CalculatorViewState()
+        state.selectMode(.vat)
+        state.amountText = AmountInputSanitizer.sanitize("1250")
+
+        let result = state.currentResult()
+
+        XCTAssertEqual(state.amountText, "1250")
+        XCTAssertLine(result, "ht", equals: "1250.00")
+        XCTAssertLine(result, "ttc", equals: "1500.00")
+    }
+
+    func testAmountInputAcceptsFrenchDecimalComma() {
+        var state = CalculatorViewState()
+        state.selectMode(.vat)
+        state.amountText = AmountInputSanitizer.sanitize("12,50")
+
+        let result = state.currentResult()
+
+        XCTAssertEqual(state.amountText, "12,50")
+        XCTAssertLine(result, "ht", equals: "12.50")
+        XCTAssertLine(result, "vat", equals: "2.50")
+    }
+
+    func testAmountInputConvertsDecimalPointToComma() {
+        var state = CalculatorViewState()
+        state.selectMode(.vat)
+        state.amountText = AmountInputSanitizer.sanitize("12.50")
+
+        let result = state.currentResult()
+
+        XCTAssertEqual(state.amountText, "12,50")
+        XCTAssertLine(result, "ht", equals: "12.50")
+        XCTAssertLine(result, "ttc", equals: "15.00")
+    }
+
+    func testAmountInputRejectsInvalidCharactersAndDuplicateComma() {
+        XCTAssertEqual(AmountInputSanitizer.sanitize("abc12,,5x0"), "12,50")
+    }
+
+    func testEmptyAmountInputCalculatesAsZero() {
+        var state = CalculatorViewState()
+        state.selectMode(.vat)
+        state.amountText = ""
+
+        let result = state.currentResult()
+
+        XCTAssertEqual(state.amountText, "")
+        XCTAssertLine(result, "ht", equals: "0.00")
+        XCTAssertLine(result, "ttc", equals: "0.00")
+    }
+
     func testStateSwitchesModeAndActiveMarginField() {
         var state = CalculatorViewState()
 
@@ -402,6 +470,24 @@ final class VATCalculatorTests: XCTestCase {
         XCTAssertLine(result, "purchase_ht", equals: "60.00")
         XCTAssertLine(result, "sale_ht", equals: "100.00")
         XCTAssertLine(result, "net_vat", equals: "8.00")
+    }
+
+    func testMarginAmountInputsStayDistinctWithSanitizedText() {
+        var state = CalculatorViewState()
+
+        state.selectMode(.margin)
+        state.purchaseKind = .ttc
+        state.saleKind = .ttc
+        state.purchaseText = AmountInputSanitizer.sanitize("72")
+        state.saleText = AmountInputSanitizer.sanitize("120")
+
+        let result = state.currentResult()
+
+        XCTAssertEqual(state.purchaseText, "72")
+        XCTAssertEqual(state.saleText, "120")
+        XCTAssertLine(result, "purchase_ht", equals: "60.00")
+        XCTAssertLine(result, "sale_ht", equals: "100.00")
+        XCTAssertCurrency(result.mainAmount, "40.00")
     }
 
     func testHistoryPersistsLocally() {

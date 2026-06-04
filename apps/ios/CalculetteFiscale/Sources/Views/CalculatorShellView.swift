@@ -15,6 +15,7 @@ struct CalculatorShellView: View {
     @State private var activePicker: CalculatorPicker?
     @State private var defaultSettings: DefaultCalculatorSettings
     @State private var copyFeedback = false
+    @FocusState private var focusedAmountInput: AmountInputFocus?
 
     init(screenshotScenario: ScreenshotScenario? = nil) {
         self.screenshotScenario = screenshotScenario
@@ -31,7 +32,11 @@ struct CalculatorShellView: View {
 
         NavigationStack {
             ZStack {
-                Color.black.ignoresSafeArea()
+                Color.black
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        focusedAmountInput = nil
+                    }
 
                 ScrollView {
                     VStack(spacing: 16) {
@@ -48,6 +53,7 @@ struct CalculatorShellView: View {
                             result: result,
                             ruleSet: ruleSet,
                             copyFeedback: copyFeedback,
+                            focusedInput: $focusedAmountInput,
                             onPicker: { activePicker = $0 },
                             onCopy: { copyResult(result) },
                             onDetails: openDetails
@@ -63,9 +69,19 @@ struct CalculatorShellView: View {
                     .padding(.top, 12)
                     .padding(.bottom, 28)
                 }
+                .scrollDismissesKeyboard(.interactively)
             }
         }
         .preferredColorScheme(.dark)
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Terminé") {
+                    focusedAmountInput = nil
+                }
+                .fontWeight(.semibold)
+            }
+        }
         .onChange(of: entitlementStore.isPro) { _, isPro in
             if isPro {
                 isShowingPaywall = false
@@ -435,11 +451,18 @@ private enum CalculatorPicker: String, Identifiable {
     }
 }
 
+private enum AmountInputFocus: Hashable {
+    case amount
+    case marginPurchase
+    case marginSale
+}
+
 private struct CalculatorWorkspaceView: View {
     @Binding var state: CalculatorViewState
     let result: CalculationResult
     let ruleSet: TaxRuleSet
     let copyFeedback: Bool
+    @FocusState.Binding var focusedInput: AmountInputFocus?
     let onPicker: (CalculatorPicker) -> Void
     let onCopy: () -> Void
     let onDetails: () -> Void
@@ -453,6 +476,7 @@ private struct CalculatorWorkspaceView: View {
                     result: result,
                     ruleSet: ruleSet,
                     copyFeedback: copyFeedback,
+                    focusedInput: $focusedInput,
                     onPicker: onPicker,
                     onCopy: onCopy,
                     onDetails: onDetails
@@ -463,6 +487,7 @@ private struct CalculatorWorkspaceView: View {
                     result: result,
                     ruleSet: ruleSet,
                     copyFeedback: copyFeedback,
+                    focusedInput: $focusedInput,
                     onPicker: onPicker,
                     onCopy: onCopy,
                     onDetails: onDetails
@@ -473,6 +498,7 @@ private struct CalculatorWorkspaceView: View {
                     result: result,
                     ruleSet: ruleSet,
                     copyFeedback: copyFeedback,
+                    focusedInput: $focusedInput,
                     onPicker: onPicker,
                     onCopy: onCopy,
                     onDetails: onDetails
@@ -483,6 +509,7 @@ private struct CalculatorWorkspaceView: View {
                     result: result,
                     ruleSet: ruleSet,
                     copyFeedback: copyFeedback,
+                    focusedInput: $focusedInput,
                     onPicker: onPicker,
                     onCopy: onCopy,
                     onDetails: onDetails
@@ -497,6 +524,7 @@ private struct ResteNetCalculatorView: View {
     let result: CalculationResult
     let ruleSet: TaxRuleSet
     let copyFeedback: Bool
+    @FocusState.Binding var focusedInput: AmountInputFocus?
     let onPicker: (CalculatorPicker) -> Void
     let onCopy: () -> Void
     let onDetails: () -> Void
@@ -519,7 +547,9 @@ private struct ResteNetCalculatorView: View {
                 title: "Montant facturé ou encaissé",
                 text: $state.amountText,
                 trailingTitle: state.amountKind.rawValue,
-                trailingAction: { onPicker(.amountKind) }
+                trailingAction: { onPicker(.amountKind) },
+                focus: .amount,
+                focusedInput: $focusedInput
             )
 
             ChipGrid {
@@ -560,6 +590,7 @@ private struct NetGoalCalculatorView: View {
     let result: CalculationResult
     let ruleSet: TaxRuleSet
     let copyFeedback: Bool
+    @FocusState.Binding var focusedInput: AmountInputFocus?
     let onPicker: (CalculatorPicker) -> Void
     let onCopy: () -> Void
     let onDetails: () -> Void
@@ -574,7 +605,9 @@ private struct NetGoalCalculatorView: View {
                 title: "Objectif net à garder",
                 text: $state.amountText,
                 trailingTitle: "Net",
-                trailingAction: nil
+                trailingAction: nil,
+                focus: .amount,
+                focusedInput: $focusedInput
             )
 
             ChipGrid {
@@ -610,6 +643,7 @@ private struct VATCalculatorView: View {
     let result: CalculationResult
     let ruleSet: TaxRuleSet
     let copyFeedback: Bool
+    @FocusState.Binding var focusedInput: AmountInputFocus?
     let onPicker: (CalculatorPicker) -> Void
     let onCopy: () -> Void
     let onDetails: () -> Void
@@ -620,7 +654,9 @@ private struct VATCalculatorView: View {
                 title: inputTitle,
                 text: $state.amountText,
                 trailingTitle: rateChipTitle(state: state, ruleSet: ruleSet),
-                trailingAction: { onPicker(.vatRate) }
+                trailingAction: { onPicker(.vatRate) },
+                focus: .amount,
+                focusedInput: $focusedInput
             )
 
             HStack(spacing: 8) {
@@ -686,6 +722,7 @@ private struct MarginCalculatorView: View {
     let result: CalculationResult
     let ruleSet: TaxRuleSet
     let copyFeedback: Bool
+    @FocusState.Binding var focusedInput: AmountInputFocus?
     let onPicker: (CalculatorPicker) -> Void
     let onCopy: () -> Void
     let onDetails: () -> Void
@@ -696,14 +733,18 @@ private struct MarginCalculatorView: View {
                 title: "Prix d'achat",
                 text: $state.purchaseText,
                 trailingTitle: state.purchaseKind.rawValue,
-                trailingAction: { onPicker(.purchaseKind) }
+                trailingAction: { onPicker(.purchaseKind) },
+                focus: .marginPurchase,
+                focusedInput: $focusedInput
             )
 
             AmountInputPanel(
                 title: "Prix de vente",
                 text: $state.saleText,
                 trailingTitle: state.saleKind.rawValue,
-                trailingAction: { onPicker(.saleKind) }
+                trailingAction: { onPicker(.saleKind) },
+                focus: .marginSale,
+                focusedInput: $focusedInput
             )
 
             ChipGrid {
@@ -739,6 +780,8 @@ private struct AmountInputPanel: View {
     @Binding var text: String
     let trailingTitle: String
     let trailingAction: (() -> Void)?
+    let focus: AmountInputFocus
+    @FocusState.Binding var focusedInput: AmountInputFocus?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -770,13 +813,33 @@ private struct AmountInputPanel: View {
 
             TextField("0", text: $text)
                 .keyboardType(.decimalPad)
+                .submitLabel(.done)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
+                .focused($focusedInput, equals: focus)
                 .font(.system(size: 44, weight: .medium, design: .rounded))
                 .foregroundStyle(.white)
                 .multilineTextAlignment(.trailing)
                 .lineLimit(1)
                 .minimumScaleFactor(0.45)
+                .accessibilityLabel(title)
+                .accessibilityValue(text.isEmpty ? "0" : text)
+                .onSubmit {
+                    focusedInput = nil
+                }
+                .onChange(of: text) { _, newValue in
+                    let sanitized = AmountInputSanitizer.sanitize(newValue)
+                    if sanitized != newValue {
+                        text = sanitized
+                    }
+                }
+                .onChange(of: focusedInput) { _, newFocus in
+                    guard newFocus == focus, AmountInputSanitizer.shouldClearOnFocus(text) else {
+                        return
+                    }
+
+                    text = ""
+                }
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)

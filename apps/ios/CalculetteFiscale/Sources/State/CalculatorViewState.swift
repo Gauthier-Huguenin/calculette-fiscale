@@ -113,12 +113,58 @@ enum CalculationHistoryStore {
     }
 }
 
+enum AmountInputSanitizer {
+    static func sanitize(_ rawValue: String) -> String {
+        let normalized = rawValue
+            .replacingOccurrences(of: " ", with: "")
+            .replacingOccurrences(of: ".", with: ",")
+
+        var integerPart = ""
+        var fractionalPart = ""
+        var hasDecimalSeparator = false
+
+        for character in normalized {
+            if character.isNumber {
+                if hasDecimalSeparator {
+                    fractionalPart.append(character)
+                } else {
+                    integerPart.append(character)
+                }
+            } else if character == "," && !hasDecimalSeparator {
+                hasDecimalSeparator = true
+            }
+        }
+
+        if integerPart.isEmpty && !hasDecimalSeparator {
+            return ""
+        }
+
+        integerPart = normalizedIntegerPart(integerPart)
+
+        if hasDecimalSeparator {
+            return "\(integerPart),\(fractionalPart)"
+        }
+
+        return integerPart
+    }
+
+    static func shouldClearOnFocus(_ value: String) -> Bool {
+        let sanitized = sanitize(value)
+        return sanitized.isEmpty || sanitized == "0"
+    }
+
+    private static func normalizedIntegerPart(_ value: String) -> String {
+        let trimmed = value.drop { $0 == "0" }
+        return trimmed.isEmpty ? "0" : String(trimmed)
+    }
+}
+
 struct CalculatorViewState: Equatable {
     var selectedMode: CalculationMode = .independent
-    var amountText = "0"
+    var amountText = ""
     var customVATRateText = "20"
-    var purchaseText = "0"
-    var saleText = "0"
+    var purchaseText = ""
+    var saleText = ""
     var activeEntryField: CalculatorEntryField = .amount
     var activeMarginField: MarginInputField = .sale
     var vatCalculationKind: VATCalculationKind = .htToTTC
