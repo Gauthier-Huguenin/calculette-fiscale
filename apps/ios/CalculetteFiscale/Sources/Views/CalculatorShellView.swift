@@ -362,7 +362,7 @@ private struct ModeSelector: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            ForEach(CalculationMode.allCases) { mode in
+            ForEach(CalculationMode.businessOrder) { mode in
                 ModeButton(
                     title: mode.intentTitle,
                     isSelected: state.selectedMode == mode,
@@ -2040,6 +2040,10 @@ private struct HistoryView: View {
 }
 
 private extension CalculationMode {
+    static var businessOrder: [CalculationMode] {
+        [.independent, .netGoal, .vat, .margin]
+    }
+
     var intentTitle: String {
         switch self {
         case .vat:
