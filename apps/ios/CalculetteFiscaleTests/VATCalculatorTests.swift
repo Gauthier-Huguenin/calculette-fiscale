@@ -5,10 +5,12 @@ final class VATCalculatorTests: XCTestCase {
     override func setUp() {
         super.setUp()
         CalculationHistoryStore.clear()
+        CalculatorDefaultsStore.clear()
     }
 
     override func tearDown() {
         CalculationHistoryStore.clear()
+        CalculatorDefaultsStore.clear()
         super.tearDown()
     }
 
@@ -101,6 +103,16 @@ final class VATCalculatorTests: XCTestCase {
         XCTAssertCurrency(result.mainAmount, "744.00")
     }
 
+    func testResteNetUsesEverydayResultLabelAndCoreLines() {
+        let result = independentResult(profile: .microBNCServiceGeneral, amount: 1200, amountKind: .ttc)
+
+        XCTAssertEqual(result.mainLabel, "Il te reste environ")
+        XCTAssertLine(result, "ca_ht", equals: "1000.00")
+        XCTAssertLine(result, "vat", equals: "200.00")
+        XCTAssertLine(result, "social", equals: "256.00")
+        XCTAssertCurrency(result.mainAmount, "744.00")
+    }
+
     func testMicroBNCGeneralWithVersementLiberatoire() {
         let result = TaxCalculationEngine.calculate(
             .independent(
@@ -145,6 +157,17 @@ final class VATCalculatorTests: XCTestCase {
         XCTAssertLine(result, "required_ttc", equals: "1200.00")
     }
 
+    func testObjectifNetUsesEverydayResultLabelAndShowsAmountsToInvoice() {
+        let result = netGoalResult(profile: .microBNCServiceGeneral, target: 744)
+
+        XCTAssertEqual(result.mainLabel, "Tu dois facturer environ")
+        XCTAssertLine(result, "target", equals: "744.00")
+        XCTAssertLine(result, "required_ht", equals: "1000.00")
+        XCTAssertLine(result, "required_ttc", equals: "1200.00")
+        XCTAssertLine(result, "required_vat", equals: "200.00")
+        XCTAssertLine(result, "social", equals: "256.00")
+    }
+
     func testMarginFromHTAmounts() {
         let result = marginResult(
             purchase: 60,
@@ -172,6 +195,9 @@ final class VATCalculatorTests: XCTestCase {
         XCTAssertLine(result, "purchase_ht", equals: "60.00")
         XCTAssertLine(result, "sale_ht", equals: "100.00")
         XCTAssertCurrency(result.mainAmount, "40.00")
+        XCTAssertLine(result, "margin_rate", equals: "0.6667")
+        XCTAssertLine(result, "mark_rate", equals: "0.4000")
+        XCTAssertLine(result, "vat_collected", equals: "20.00")
         XCTAssertLine(result, "net_vat", equals: "8.00")
     }
 
@@ -191,6 +217,7 @@ final class VATCalculatorTests: XCTestCase {
 
     func testStateHandlesFrenchDecimalInputAndDelete() {
         var state = CalculatorViewState()
+        state.selectMode(.vat)
 
         state.tapKey("1")
         state.tapKey("2")
@@ -216,6 +243,7 @@ final class VATCalculatorTests: XCTestCase {
 
     func testStateHandlesBasicArithmetic() {
         var state = CalculatorViewState()
+        state.selectMode(.vat)
 
         state.tapKey("1")
         state.tapKey("0")
@@ -274,6 +302,7 @@ final class VATCalculatorTests: XCTestCase {
     func testStateCustomVATRateDrivesCurrentResult() {
         var state = CalculatorViewState()
 
+        state.selectMode(.vat)
         state.selectCustomVATRate()
         state.customVATRateText = "15"
         state.activeEntryField = .amount
@@ -285,6 +314,30 @@ final class VATCalculatorTests: XCTestCase {
 
         XCTAssertLine(result, "vat", equals: "15.00")
         XCTAssertLine(result, "ttc", equals: "115.00")
+    }
+
+    func testStateDefaultsToResteNet() {
+        let state = CalculatorViewState()
+
+        XCTAssertEqual(state.selectedMode, .independent)
+    }
+
+    func testStoredDefaultsApplyToNewAppState() {
+        var defaults = DefaultCalculatorSettings.standard
+        defaults.amountKind = .ttc
+        defaults.selectedProfileId = .microBICService
+        defaults.franchiseInBase = true
+        defaults.vflEnabled = true
+
+        CalculatorDefaultsStore.save(defaults)
+
+        let state = CalculatorViewState(defaults: CalculatorDefaultsStore.load())
+
+        XCTAssertEqual(state.selectedMode, .independent)
+        XCTAssertEqual(state.amountKind, .ttc)
+        XCTAssertEqual(state.selectedProfileId, .microBICService)
+        XCTAssertTrue(state.franchiseInBase)
+        XCTAssertTrue(state.vflEnabled)
     }
 
     func testStateMovedIndependentSettingsKeepSameCalculationInput() {

@@ -132,9 +132,9 @@ final class MonetizationTests: XCTestCase {
 
     func testProAccessPolicyLocksExpectedFeatures() {
         XCTAssertTrue(ProAccessPolicy.isAllowed(.mode(.vat), isPro: false))
-        XCTAssertFalse(ProAccessPolicy.isAllowed(.mode(.independent), isPro: false))
-        XCTAssertFalse(ProAccessPolicy.isAllowed(.mode(.netGoal), isPro: false))
-        XCTAssertFalse(ProAccessPolicy.isAllowed(.mode(.margin), isPro: false))
+        XCTAssertTrue(ProAccessPolicy.isAllowed(.mode(.independent), isPro: false))
+        XCTAssertTrue(ProAccessPolicy.isAllowed(.mode(.netGoal), isPro: false))
+        XCTAssertTrue(ProAccessPolicy.isAllowed(.mode(.margin), isPro: false))
         XCTAssertFalse(ProAccessPolicy.isAllowed(.history, isPro: false))
         XCTAssertFalse(ProAccessPolicy.isAllowed(.formulaDetails, isPro: false))
 
