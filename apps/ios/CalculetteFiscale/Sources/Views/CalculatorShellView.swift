@@ -12,100 +12,83 @@ struct CalculatorShellView: View {
     @State private var isShowingHistory: Bool
     @State private var isShowingPaywall = false
     @State private var isShowingSettings: Bool
+    @State private var activePicker: CalculatorPicker?
+    @State private var defaultSettings: DefaultCalculatorSettings
     @State private var copyFeedback = false
-    @State private var lockedPreviewMode: CalculationMode?
 
     init(screenshotScenario: ScreenshotScenario? = nil) {
         self.screenshotScenario = screenshotScenario
-        _state = State(initialValue: screenshotScenario?.state ?? CalculatorViewState())
+        let defaults = CalculatorDefaultsStore.load()
+        _state = State(initialValue: screenshotScenario?.state ?? CalculatorViewState(defaults: defaults))
         _isShowingDetails = State(initialValue: screenshotScenario?.presentedSheet == .details)
         _isShowingHistory = State(initialValue: screenshotScenario?.presentedSheet == .history)
         _isShowingSettings = State(initialValue: screenshotScenario?.presentedSheet == .settings)
+        _defaultSettings = State(initialValue: defaults)
     }
 
     var body: some View {
         let result = state.currentResult(ruleSet: ruleSet)
 
-        GeometryReader { proxy in
-            let compactHeight = proxy.size.height < 900
-            let keyHeight = min(compactHeight ? 52 : 64, max(46, proxy.size.height * 0.061))
-            let bottomPadding = max(compactHeight ? 18 : 14, proxy.safeAreaInsets.bottom + 8)
-
+        NavigationStack {
             ZStack {
                 Color.black.ignoresSafeArea()
 
-                VStack(spacing: compactHeight ? 8 : 12) {
-                    HeaderBar(
-                        onHistory: openHistory,
-                        isPro: entitlementStore.isPro,
-                        historyCount: state.history.count
-                    )
+                ScrollView {
+                    VStack(spacing: 16) {
+                        HeaderBar(
+                            onHistory: openHistory,
+                            isPro: entitlementStore.isPro,
+                            historyCount: state.history.count
+                        )
 
-                    ModeSelector(
-                        state: $state,
-                        isPro: entitlementStore.isPro,
-                        onLockedMode: showLockedPreview
-                    )
+                        ModeSelector(state: $state)
 
-                    ResultPanel(
-                        state: state,
-                        result: result,
-                        ruleSet: ruleSet,
-                        compactHeight: compactHeight,
-                        copyFeedback: copyFeedback,
-                        onCopy: { copyResult(result) }
-                    )
-                    .layoutPriority(1)
+                        CalculatorWorkspaceView(
+                            state: $state,
+                            result: result,
+                            ruleSet: ruleSet,
+                            copyFeedback: copyFeedback,
+                            onPicker: { activePicker = $0 },
+                            onCopy: { copyResult(result) },
+                            onDetails: openDetails
+                        )
 
-                    EssentialControls(
-                        state: $state,
-                        compactHeight: compactHeight
-                    )
-
-                    ActionBar(
-                        isPro: entitlementStore.isPro,
-                        onSettings: { isShowingSettings = true },
-                        onDetails: openDetails
-                    )
-
-                    NumericKeypad(keyHeight: keyHeight) { key in
-                        handleKey(key)
+                        ActionBar(
+                            isPro: entitlementStore.isPro,
+                            onSettings: { isShowingSettings = true },
+                            onDetails: openDetails
+                        )
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 12)
+                    .padding(.bottom, 28)
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, compactHeight ? 8 : 14)
-                .padding(.bottom, bottomPadding)
             }
         }
         .preferredColorScheme(.dark)
         .onChange(of: entitlementStore.isPro) { _, isPro in
             if isPro {
                 isShowingPaywall = false
-            } else if state.selectedMode.requiresPro {
-                state.selectMode(.vat)
             }
         }
         .sheet(isPresented: $isShowingSettings) {
-            CalculationSettingsView(
-                state: $state,
+            DefaultSettingsView(
+                settings: $defaultSettings,
                 ruleSet: ruleSet,
-                isPro: entitlementStore.isPro,
-                onLockedMode: showLockedPreviewFromSettings
+                onSave: { settings in
+                    CalculatorDefaultsStore.save(settings)
+                }
             )
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
-        .sheet(item: $lockedPreviewMode) { mode in
-            LockedModePreviewView(
-                mode: mode,
-                onShowPaywall: {
-                    lockedPreviewMode = nil
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.20) {
-                        showPaywall()
-                    }
-                }
+        .sheet(item: $activePicker) { picker in
+            CalculatorPickerSheet(
+                picker: picker,
+                state: $state,
+                ruleSet: ruleSet
             )
-            .presentationDetents([.medium])
+            .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $isShowingDetails) {
@@ -137,9 +120,11 @@ struct CalculatorShellView: View {
     }
 
     private func copyResult(_ result: CalculationResult) {
-        UIPasteboard.general.string = entitlementStore.isPro
-            ? result.copyText
-            : "\(result.mainLabel) : \(result.mainAmount.currencyText)"
+        UIPasteboard.general.string = DecisionSummary.copyText(
+            for: state,
+            result: result,
+            ruleSet: ruleSet
+        )
 
         if entitlementStore.isPro {
             state.addHistoryEntry(result: result)
@@ -174,16 +159,6 @@ struct CalculatorShellView: View {
         isShowingPaywall = true
     }
 
-    private func showLockedPreview(_ mode: CalculationMode) {
-        lockedPreviewMode = mode
-    }
-
-    private func showLockedPreviewFromSettings(_ mode: CalculationMode) {
-        isShowingSettings = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.20) {
-            lockedPreviewMode = mode
-        }
-    }
 }
 
 enum ScreenshotPresentedSheet {
@@ -384,8 +359,6 @@ private struct HeaderBar: View {
 
 private struct ModeSelector: View {
     @Binding var state: CalculatorViewState
-    let isPro: Bool
-    let onLockedMode: (CalculationMode) -> Void
 
     var body: some View {
         HStack(spacing: 8) {
@@ -393,14 +366,7 @@ private struct ModeSelector: View {
                 ModeButton(
                     title: mode.intentTitle,
                     isSelected: state.selectedMode == mode,
-                    isLocked: mode.requiresPro && !isPro,
-                    action: {
-                        if ProAccessPolicy.isAllowed(.mode(mode), isPro: isPro) {
-                            state.selectMode(mode)
-                        } else {
-                            onLockedMode(mode)
-                        }
-                    }
+                    action: { state.selectMode(mode) }
                 )
             }
         }
@@ -410,31 +376,958 @@ private struct ModeSelector: View {
 private struct ModeButton: View {
     let title: String
     let isSelected: Bool
-    let isLocked: Bool
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 3) {
-                if isLocked {
-                    Image(systemName: "lock.fill")
-                        .font(.system(size: 10, weight: .bold))
-                }
-
-                Text(title)
-                    .font(.system(size: 12, weight: .semibold))
-                    .lineLimit(2)
-                    .multilineTextAlignment(.center)
-                    .minimumScaleFactor(0.72)
-            }
+            Text(title)
+                .font(.system(size: 13, weight: .semibold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.72)
             .frame(maxWidth: .infinity, minHeight: 52)
             .padding(.horizontal, 6)
             .background(isSelected ? Color.white : Color.white.opacity(0.11))
-            .foregroundStyle(isSelected ? Color.black : Color.white.opacity(isLocked ? 0.58 : 1))
+            .foregroundStyle(isSelected ? Color.black : Color.white)
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(isLocked ? "Mode \(title) verrouillé" : "Mode \(title)")
+        .accessibilityLabel("Calculette \(title)")
+    }
+}
+
+private enum CalculatorPicker: String, Identifiable {
+    case vatRate
+    case profile
+    case amountKind
+    case purchaseKind
+    case saleKind
+    case vatApplicability
+    case vfl
+    case cfpReserve
+    case cfpNetGoal
+    case vatDeductible
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .vatRate:
+            return "Taux de TVA"
+        case .profile:
+            return "Profil fiscal"
+        case .amountKind:
+            return "Montant saisi"
+        case .purchaseKind:
+            return "Prix d'achat"
+        case .saleKind:
+            return "Prix de vente"
+        case .vatApplicability:
+            return "TVA"
+        case .vfl:
+            return "Versement libératoire"
+        case .cfpReserve:
+            return "CFP"
+        case .cfpNetGoal:
+            return "CFP objectif net"
+        case .vatDeductible:
+            return "TVA sur achat"
+        }
+    }
+}
+
+private struct CalculatorWorkspaceView: View {
+    @Binding var state: CalculatorViewState
+    let result: CalculationResult
+    let ruleSet: TaxRuleSet
+    let copyFeedback: Bool
+    let onPicker: (CalculatorPicker) -> Void
+    let onCopy: () -> Void
+    let onDetails: () -> Void
+
+    var body: some View {
+        VStack(spacing: 14) {
+            switch state.selectedMode {
+            case .independent:
+                ResteNetCalculatorView(
+                    state: $state,
+                    result: result,
+                    ruleSet: ruleSet,
+                    copyFeedback: copyFeedback,
+                    onPicker: onPicker,
+                    onCopy: onCopy,
+                    onDetails: onDetails
+                )
+            case .netGoal:
+                NetGoalCalculatorView(
+                    state: $state,
+                    result: result,
+                    ruleSet: ruleSet,
+                    copyFeedback: copyFeedback,
+                    onPicker: onPicker,
+                    onCopy: onCopy,
+                    onDetails: onDetails
+                )
+            case .vat:
+                VATCalculatorView(
+                    state: $state,
+                    result: result,
+                    ruleSet: ruleSet,
+                    copyFeedback: copyFeedback,
+                    onPicker: onPicker,
+                    onCopy: onCopy,
+                    onDetails: onDetails
+                )
+            case .margin:
+                MarginCalculatorView(
+                    state: $state,
+                    result: result,
+                    ruleSet: ruleSet,
+                    copyFeedback: copyFeedback,
+                    onPicker: onPicker,
+                    onCopy: onCopy,
+                    onDetails: onDetails
+                )
+            }
+        }
+    }
+}
+
+private struct ResteNetCalculatorView: View {
+    @Binding var state: CalculatorViewState
+    let result: CalculationResult
+    let ruleSet: TaxRuleSet
+    let copyFeedback: Bool
+    let onPicker: (CalculatorPicker) -> Void
+    let onCopy: () -> Void
+    let onDetails: () -> Void
+
+    private var htAmount: Decimal {
+        amount("ca_ht", in: result)
+    }
+
+    private var vatAmount: Decimal {
+        amount("vat", in: result)
+    }
+
+    private var ttcAmount: Decimal {
+        state.vatApplicable ? (htAmount + vatAmount).currencyRounded : htAmount
+    }
+
+    var body: some View {
+        VStack(spacing: 14) {
+            AmountInputPanel(
+                title: "Montant facturé ou encaissé",
+                text: $state.amountText,
+                trailingTitle: state.amountKind.rawValue,
+                trailingAction: { onPicker(.amountKind) }
+            )
+
+            ChipGrid {
+                EditableChip(title: state.amountKind.rawValue, systemImage: "arrow.left.arrow.right", action: { onPicker(.amountKind) })
+                EditableChip(title: vatChipTitle, systemImage: "percent", action: { onPicker(.vatApplicability) })
+                EditableChip(title: rateChipTitle(state: state, ruleSet: ruleSet), systemImage: "tag", action: { onPicker(.vatRate) })
+                EditableChip(title: profileShortLabel(state.selectedProfileId), systemImage: "person.crop.circle", action: { onPicker(.profile) })
+                EditableChip(title: state.vflEnabled ? "VFL activé" : "VFL désactivé", systemImage: "checklist", action: { onPicker(.vfl) })
+                EditableChip(title: state.includeCFPReserve ? "CFP incluse" : "CFP séparée", systemImage: "shield", action: { onPicker(.cfpReserve) })
+            }
+
+            MainResultCard(
+                title: "Il te reste environ",
+                amount: result.mainAmount.currencyText,
+                subtitle: "Estimation après cotisations",
+                copyFeedback: copyFeedback,
+                onCopy: onCopy,
+                onDetails: onDetails
+            )
+
+            MetricList(rows: [
+                MetricRowData(label: "Montant HT", value: htAmount.currencyText),
+                MetricRowData(label: "Montant TTC", value: ttcAmount.currencyText),
+                MetricRowData(label: "TVA à mettre de côté", value: state.vatApplicable ? vatAmount.currencyText : "Non facturée"),
+                MetricRowData(label: "Cotisations estimées", value: value("social", in: result)),
+                MetricRowData(label: "Net estimé", value: result.mainAmount.currencyText, isEmphasized: true)
+            ])
+        }
+    }
+
+    private var vatChipTitle: String {
+        state.franchiseInBase ? "Franchise TVA" : "TVA facturée"
+    }
+}
+
+private struct NetGoalCalculatorView: View {
+    @Binding var state: CalculatorViewState
+    let result: CalculationResult
+    let ruleSet: TaxRuleSet
+    let copyFeedback: Bool
+    let onPicker: (CalculatorPicker) -> Void
+    let onCopy: () -> Void
+    let onDetails: () -> Void
+
+    private var requiredTTC: String {
+        state.vatApplicable ? value("required_ttc", in: result) : "Sans TVA"
+    }
+
+    var body: some View {
+        VStack(spacing: 14) {
+            AmountInputPanel(
+                title: "Objectif net à garder",
+                text: $state.amountText,
+                trailingTitle: "Net",
+                trailingAction: nil
+            )
+
+            ChipGrid {
+                EditableChip(title: profileShortLabel(state.selectedProfileId), systemImage: "person.crop.circle", action: { onPicker(.profile) })
+                EditableChip(title: state.franchiseInBase ? "Franchise TVA" : "TVA facturée", systemImage: "percent", action: { onPicker(.vatApplicability) })
+                EditableChip(title: rateChipTitle(state: state, ruleSet: ruleSet), systemImage: "tag", action: { onPicker(.vatRate) })
+                EditableChip(title: state.vflEnabled ? "VFL activé" : "VFL désactivé", systemImage: "checklist", action: { onPicker(.vfl) })
+                EditableChip(title: state.includeCFPInNetGoal ? "CFP incluse" : "CFP séparée", systemImage: "shield", action: { onPicker(.cfpNetGoal) })
+            }
+
+            MainResultCard(
+                title: "Tu dois facturer environ",
+                amount: "\(result.mainAmount.currencyText) HT",
+                subtitle: state.vatApplicable ? "soit \(requiredTTC) TTC" : "franchise en base de TVA",
+                copyFeedback: copyFeedback,
+                onCopy: onCopy,
+                onDetails: onDetails
+            )
+
+            MetricList(rows: [
+                MetricRowData(label: "Objectif net", value: value("target", in: result)),
+                MetricRowData(label: "Montant HT à facturer", value: value("required_ht", in: result), isEmphasized: true),
+                MetricRowData(label: "Montant TTC indicatif", value: requiredTTC),
+                MetricRowData(label: "TVA collectée", value: state.vatApplicable ? value("required_vat", in: result) : "Non facturée"),
+                MetricRowData(label: "Cotisations estimées", value: value("social", in: result))
+            ])
+        }
+    }
+}
+
+private struct VATCalculatorView: View {
+    @Binding var state: CalculatorViewState
+    let result: CalculationResult
+    let ruleSet: TaxRuleSet
+    let copyFeedback: Bool
+    let onPicker: (CalculatorPicker) -> Void
+    let onCopy: () -> Void
+    let onDetails: () -> Void
+
+    var body: some View {
+        VStack(spacing: 14) {
+            AmountInputPanel(
+                title: inputTitle,
+                text: $state.amountText,
+                trailingTitle: rateChipTitle(state: state, ruleSet: ruleSet),
+                trailingAction: { onPicker(.vatRate) }
+            )
+
+            HStack(spacing: 8) {
+                ForEach(VATCalculationKind.allCases) { kind in
+                    SegmentButton(
+                        title: kind.shortTitle,
+                        isSelected: state.vatCalculationKind == kind,
+                        compactHeight: false,
+                        action: {
+                            state.vatCalculationKind = kind
+                            state.activeEntryField = .amount
+                        }
+                    )
+                }
+            }
+
+            ChipGrid {
+                EditableChip(title: rateChipTitle(state: state, ruleSet: ruleSet), systemImage: "percent", action: { onPicker(.vatRate) })
+            }
+
+            MainResultCard(
+                title: resultTitle,
+                amount: result.mainAmount.currencyText,
+                subtitle: "Taux utilisé : \(value("rate", in: result))",
+                copyFeedback: copyFeedback,
+                onCopy: onCopy,
+                onDetails: onDetails
+            )
+
+            MetricList(rows: [
+                MetricRowData(label: "Montant HT", value: value("ht", in: result)),
+                MetricRowData(label: "Montant TTC", value: value("ttc", in: result)),
+                MetricRowData(label: "TVA à mettre de côté", value: value("vat", in: result), isEmphasized: true)
+            ])
+        }
+    }
+
+    private var inputTitle: String {
+        switch state.vatCalculationKind {
+        case .htToTTC:
+            return "Montant HT"
+        case .ttcToHT:
+            return "Montant TTC"
+        case .vatOnly:
+            return "Base HT"
+        }
+    }
+
+    private var resultTitle: String {
+        switch state.vatCalculationKind {
+        case .htToTTC:
+            return "Montant TTC"
+        case .ttcToHT:
+            return "Montant HT"
+        case .vatOnly:
+            return "TVA seule"
+        }
+    }
+}
+
+private struct MarginCalculatorView: View {
+    @Binding var state: CalculatorViewState
+    let result: CalculationResult
+    let ruleSet: TaxRuleSet
+    let copyFeedback: Bool
+    let onPicker: (CalculatorPicker) -> Void
+    let onCopy: () -> Void
+    let onDetails: () -> Void
+
+    var body: some View {
+        VStack(spacing: 14) {
+            AmountInputPanel(
+                title: "Prix d'achat",
+                text: $state.purchaseText,
+                trailingTitle: state.purchaseKind.rawValue,
+                trailingAction: { onPicker(.purchaseKind) }
+            )
+
+            AmountInputPanel(
+                title: "Prix de vente",
+                text: $state.saleText,
+                trailingTitle: state.saleKind.rawValue,
+                trailingAction: { onPicker(.saleKind) }
+            )
+
+            ChipGrid {
+                EditableChip(title: "Achat \(state.purchaseKind.rawValue)", systemImage: "cart", action: { onPicker(.purchaseKind) })
+                EditableChip(title: "Vente \(state.saleKind.rawValue)", systemImage: "tag", action: { onPicker(.saleKind) })
+                EditableChip(title: state.franchiseInBase ? "Franchise TVA" : "TVA facturée", systemImage: "percent", action: { onPicker(.vatApplicability) })
+                EditableChip(title: rateChipTitle(state: state, ruleSet: ruleSet), systemImage: "number", action: { onPicker(.vatRate) })
+                EditableChip(title: state.vatDeductibleOnPurchase ? "TVA achat déductible" : "TVA achat non déduite", systemImage: "minus.circle", action: { onPicker(.vatDeductible) })
+            }
+
+            MainResultCard(
+                title: "Marge brute HT",
+                amount: result.mainAmount.currencyText,
+                subtitle: "Taux de marque : \(value("mark_rate", in: result))",
+                copyFeedback: copyFeedback,
+                onCopy: onCopy,
+                onDetails: onDetails
+            )
+
+            MetricList(rows: [
+                MetricRowData(label: "Marge brute HT", value: value("gross_margin", in: result), isEmphasized: true),
+                MetricRowData(label: "Taux de marge", value: value("margin_rate", in: result)),
+                MetricRowData(label: "Taux de marque", value: value("mark_rate", in: result)),
+                MetricRowData(label: "TVA collectée", value: state.vatApplicable ? value("vat_collected", in: result) : "Non facturée"),
+                MetricRowData(label: "TVA nette", value: value("net_vat", in: result))
+            ])
+        }
+    }
+}
+
+private struct AmountInputPanel: View {
+    let title: String
+    @Binding var text: String
+    let trailingTitle: String
+    let trailingAction: (() -> Void)?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 12) {
+                Text(title)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(.white.opacity(0.70))
+
+                Spacer()
+
+                if let trailingAction {
+                    Button(action: trailingAction) {
+                        Text(trailingTitle)
+                            .font(.system(size: 14, weight: .semibold))
+                            .lineLimit(1)
+                            .padding(.horizontal, 10)
+                            .frame(minHeight: 32)
+                            .background(Color.orange.opacity(0.20))
+                            .foregroundStyle(.orange)
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    Text(trailingTitle)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.white.opacity(0.54))
+                }
+            }
+
+            TextField("0", text: $text)
+                .keyboardType(.decimalPad)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .font(.system(size: 44, weight: .medium, design: .rounded))
+                .foregroundStyle(.white)
+                .multilineTextAlignment(.trailing)
+                .lineLimit(1)
+                .minimumScaleFactor(0.45)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.white.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color.white.opacity(0.10), lineWidth: 1)
+        )
+    }
+}
+
+private struct ChipGrid<Content: View>: View {
+    let content: Content
+
+    private let columns = [
+        GridItem(.flexible(), spacing: 8),
+        GridItem(.flexible(), spacing: 8)
+    ]
+
+    init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+
+    var body: some View {
+        LazyVGrid(columns: columns, alignment: .leading, spacing: 8) {
+            content
+        }
+    }
+}
+
+private struct EditableChip: View {
+    let title: String
+    let systemImage: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Label(title, systemImage: systemImage)
+                .font(.system(size: 13, weight: .semibold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.72)
+                .frame(maxWidth: .infinity, minHeight: 38, alignment: .leading)
+                .padding(.horizontal, 10)
+                .background(Color.white.opacity(0.11))
+                .foregroundStyle(.white)
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct MainResultCard: View {
+    let title: String
+    let amount: String
+    let subtitle: String
+    let copyFeedback: Bool
+    let onCopy: () -> Void
+    let onDetails: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(title)
+                    .font(.system(size: 22, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Text(amount)
+                    .font(.system(size: 54, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.34)
+
+                Text(subtitle)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.white.opacity(0.64))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            HStack(spacing: 10) {
+                ResultActionButton(
+                    title: copyFeedback ? "Copié" : "Copier le résumé",
+                    systemImage: copyFeedback ? "checkmark.circle.fill" : "doc.on.doc",
+                    action: onCopy
+                )
+
+                ResultActionButton(
+                    title: "Voir le détail",
+                    systemImage: "list.bullet.rectangle",
+                    action: onDetails
+                )
+            }
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.white.opacity(0.10))
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(Color.white.opacity(0.12), lineWidth: 1)
+        )
+    }
+}
+
+private struct ResultActionButton: View {
+    let title: String
+    let systemImage: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Label(title, systemImage: systemImage)
+                .font(.system(size: 14, weight: .semibold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.78)
+                .frame(maxWidth: .infinity, minHeight: 42)
+                .background(Color.white.opacity(0.12))
+                .foregroundStyle(.white)
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct MetricRowData: Identifiable {
+    let id = UUID()
+    let label: String
+    let value: String
+    var isEmphasized = false
+}
+
+private struct MetricList: View {
+    let rows: [MetricRowData]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ForEach(rows) { row in
+                HStack(alignment: .firstTextBaseline, spacing: 14) {
+                    Text(row.label)
+                        .font(.system(size: 15, weight: row.isEmphasized ? .semibold : .medium))
+                        .foregroundStyle(.white.opacity(row.isEmphasized ? 0.92 : 0.64))
+
+                    Spacer(minLength: 16)
+
+                    Text(row.value)
+                        .font(.system(size: 16, weight: row.isEmphasized ? .semibold : .medium, design: .rounded))
+                        .foregroundStyle(row.isEmphasized ? Color.orange : Color.white)
+                        .multilineTextAlignment(.trailing)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.74)
+                }
+                .padding(.vertical, 12)
+
+                if row.id != rows.last?.id {
+                    Divider().overlay(Color.white.opacity(0.10))
+                }
+            }
+        }
+        .padding(.horizontal, 16)
+        .background(Color.white.opacity(0.07))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+}
+
+private struct CalculatorPickerSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    let picker: CalculatorPicker
+    @Binding var state: CalculatorViewState
+    let ruleSet: TaxRuleSet
+
+    var body: some View {
+        NavigationStack {
+            List {
+                content
+            }
+            .navigationTitle(picker.title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Terminé") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+        .preferredColorScheme(.dark)
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        switch picker {
+        case .vatRate:
+            Section("Taux usuels") {
+                ForEach(ruleSet.vatRates) { rate in
+                    PickerOptionRow(
+                        title: rate.label,
+                        subtitle: "Taux français usuel",
+                        isSelected: !state.usesCustomVATRate && state.selectedVATRateId == rate.id,
+                        action: {
+                            state.selectVATRate(id: rate.id)
+                            dismiss()
+                        }
+                    )
+                }
+            }
+
+            Section("Taux personnalisé") {
+                TextField("20", text: $state.customVATRateText)
+                    .keyboardType(.decimalPad)
+                PickerOptionRow(
+                    title: "\(state.customVATRateText) %",
+                    subtitle: "Utiliser ce taux pour le calcul courant.",
+                    isSelected: state.usesCustomVATRate,
+                    action: {
+                        state.usesCustomVATRate = true
+                        state.activeEntryField = .amount
+                        dismiss()
+                    }
+                )
+            }
+        case .profile:
+            ForEach(ruleSet.microProfiles) { profile in
+                PickerOptionRow(
+                    title: profile.label,
+                    subtitle: "Cotisations estimées : \(profile.socialContributionRate.percentText)",
+                    isSelected: state.selectedProfileId == profile.id,
+                    action: {
+                        state.selectedProfileId = profile.id
+                        dismiss()
+                    }
+                )
+            }
+        case .amountKind:
+            amountKindRows(selection: $state.amountKind)
+        case .purchaseKind:
+            amountKindRows(selection: $state.purchaseKind)
+        case .saleKind:
+            amountKindRows(selection: $state.saleKind)
+        case .vatApplicability:
+            PickerOptionRow(
+                title: "TVA facturée",
+                subtitle: "Les montants HT, TTC et TVA sont calculés.",
+                isSelected: !state.franchiseInBase,
+                action: {
+                    state.franchiseInBase = false
+                    dismiss()
+                }
+            )
+            PickerOptionRow(
+                title: "Franchise en base",
+                subtitle: "La TVA est neutralisée dans le calcul courant.",
+                isSelected: state.franchiseInBase,
+                action: {
+                    state.franchiseInBase = true
+                    dismiss()
+                }
+            )
+        case .vfl:
+            booleanRows(
+                isOn: $state.vflEnabled,
+                enabledTitle: "VFL activé",
+                disabledTitle: "VFL désactivé",
+                enabledSubtitle: "Ajoute le versement libératoire au calcul.",
+                disabledSubtitle: "L'impôt sur le revenu reste hors calcul."
+            )
+        case .cfpReserve:
+            booleanRows(
+                isOn: $state.includeCFPReserve,
+                enabledTitle: "CFP incluse",
+                disabledTitle: "CFP séparée",
+                enabledSubtitle: "Ajoute une réserve prudente pour la CFP.",
+                disabledSubtitle: "Affiche la CFP sans la retirer du net."
+            )
+        case .cfpNetGoal:
+            booleanRows(
+                isOn: $state.includeCFPInNetGoal,
+                enabledTitle: "CFP incluse",
+                disabledTitle: "CFP séparée",
+                enabledSubtitle: "Majore le HT à facturer pour couvrir la CFP.",
+                disabledSubtitle: "Affiche la CFP sans majorer l'objectif."
+            )
+        case .vatDeductible:
+            booleanRows(
+                isOn: $state.vatDeductibleOnPurchase,
+                enabledTitle: "TVA achat déductible",
+                disabledTitle: "TVA achat non déduite",
+                enabledSubtitle: "Déduit la TVA de l'achat dans la TVA nette.",
+                disabledSubtitle: "La TVA collectée n'est pas compensée par l'achat."
+            )
+        }
+    }
+
+    private func amountKindRows(selection: Binding<AmountKind>) -> some View {
+        Group {
+            PickerOptionRow(
+                title: "HT",
+                subtitle: "Le montant est hors taxe.",
+                isSelected: selection.wrappedValue == .ht,
+                action: {
+                    selection.wrappedValue = .ht
+                    dismiss()
+                }
+            )
+            PickerOptionRow(
+                title: "TTC",
+                subtitle: "Le montant inclut la TVA.",
+                isSelected: selection.wrappedValue == .ttc,
+                action: {
+                    selection.wrappedValue = .ttc
+                    dismiss()
+                }
+            )
+        }
+    }
+
+    private func booleanRows(
+        isOn: Binding<Bool>,
+        enabledTitle: String,
+        disabledTitle: String,
+        enabledSubtitle: String,
+        disabledSubtitle: String
+    ) -> some View {
+        Group {
+            PickerOptionRow(
+                title: enabledTitle,
+                subtitle: enabledSubtitle,
+                isSelected: isOn.wrappedValue,
+                action: {
+                    isOn.wrappedValue = true
+                    dismiss()
+                }
+            )
+            PickerOptionRow(
+                title: disabledTitle,
+                subtitle: disabledSubtitle,
+                isSelected: !isOn.wrappedValue,
+                action: {
+                    isOn.wrappedValue = false
+                    dismiss()
+                }
+            )
+        }
+    }
+}
+
+private struct PickerOptionRow: View {
+    let title: String
+    let subtitle: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 14) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(.primary)
+                    Text(subtitle)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer()
+
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(isSelected ? Color.orange : Color.secondary)
+                    .font(.system(size: 24, weight: .semibold))
+            }
+            .frame(minHeight: 54)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct DefaultSettingsView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    @Binding var settings: DefaultCalculatorSettings
+    let ruleSet: TaxRuleSet
+    let onSave: (DefaultCalculatorSettings) -> Void
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section("Valeurs par défaut") {
+                    defaultAmountKindRows(selection: $settings.amountKind, prefix: "Reste net")
+                    defaultAmountKindRows(selection: $settings.purchaseKind, prefix: "Achat marge")
+                    defaultAmountKindRows(selection: $settings.saleKind, prefix: "Vente marge")
+                }
+
+                Section("TVA") {
+                    ForEach(ruleSet.vatRates) { rate in
+                        SettingOptionRow(
+                            title: rate.label,
+                            subtitle: "Taux utilisé par défaut.",
+                            isSelected: !settings.usesCustomVATRate && settings.selectedVATRateId == rate.id,
+                            action: {
+                                settings.usesCustomVATRate = false
+                                settings.selectedVATRateId = rate.id
+                                onSave(settings)
+                            }
+                        )
+                    }
+
+                    TextField("Taux personnalisé", text: $settings.customVATRateText)
+                        .keyboardType(.decimalPad)
+
+                    SettingOptionRow(
+                        title: "\(settings.customVATRateText) %",
+                        subtitle: "Utiliser le taux personnalisé par défaut.",
+                        isSelected: settings.usesCustomVATRate,
+                        action: {
+                            settings.usesCustomVATRate = true
+                            onSave(settings)
+                        }
+                    )
+
+                    SettingToggleRow(
+                        title: "Franchise en base",
+                        subtitle: "Neutralise la TVA par défaut hors calculette TVA.",
+                        isOn: settings.franchiseInBase,
+                        action: {
+                            settings.franchiseInBase.toggle()
+                            onSave(settings)
+                        }
+                    )
+                }
+
+                Section("Profil fiscal") {
+                    ForEach(ruleSet.microProfiles) { profile in
+                        SettingOptionRow(
+                            title: profile.label,
+                            subtitle: "Cotisations estimées : \(profile.socialContributionRate.percentText)",
+                            isSelected: settings.selectedProfileId == profile.id,
+                            action: {
+                                settings.selectedProfileId = profile.id
+                                onSave(settings)
+                            }
+                        )
+                    }
+                }
+
+                Section("Options") {
+                    SettingToggleRow(
+                        title: "Versement libératoire",
+                        subtitle: "Option activée par défaut pour les calculettes net.",
+                        isOn: settings.vflEnabled,
+                        action: {
+                            settings.vflEnabled.toggle()
+                            onSave(settings)
+                        }
+                    )
+                    SettingToggleRow(
+                        title: "CFP dans Reste net",
+                        subtitle: "Ajoute une réserve CFP par défaut.",
+                        isOn: settings.includeCFPReserve,
+                        action: {
+                            settings.includeCFPReserve.toggle()
+                            onSave(settings)
+                        }
+                    )
+                    SettingToggleRow(
+                        title: "CFP dans Objectif net",
+                        subtitle: "Majore le montant HT par défaut.",
+                        isOn: settings.includeCFPInNetGoal,
+                        action: {
+                            settings.includeCFPInNetGoal.toggle()
+                            onSave(settings)
+                        }
+                    )
+                    SettingToggleRow(
+                        title: "TVA achat déductible",
+                        subtitle: "Déduit la TVA d'achat par défaut dans Marge.",
+                        isOn: settings.vatDeductibleOnPurchase,
+                        action: {
+                            settings.vatDeductibleOnPurchase.toggle()
+                            onSave(settings)
+                        }
+                    )
+                }
+
+                Section("Prudence") {
+                    Text("Calculs indicatifs. Ils ne remplacent pas un conseil comptable ou fiscal adapté.")
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .navigationTitle("Réglages")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Terminé") {
+                        onSave(settings)
+                        dismiss()
+                    }
+                }
+            }
+        }
+        .preferredColorScheme(.dark)
+    }
+
+    private func defaultAmountKindRows(
+        selection: Binding<AmountKind>,
+        prefix: String
+    ) -> some View {
+        Group {
+            SettingOptionRow(
+                title: "\(prefix) HT",
+                subtitle: "Montant hors taxe par défaut.",
+                isSelected: selection.wrappedValue == .ht,
+                action: {
+                    selection.wrappedValue = .ht
+                    onSave(settings)
+                }
+            )
+            SettingOptionRow(
+                title: "\(prefix) TTC",
+                subtitle: "Montant toutes taxes comprises par défaut.",
+                isSelected: selection.wrappedValue == .ttc,
+                action: {
+                    selection.wrappedValue = .ttc
+                    onSave(settings)
+                }
+            )
+        }
+    }
+}
+
+private func value(_ id: String, in result: CalculationResult) -> String {
+    result.lines.first { $0.id == id }?.displayValue ?? "0,00 €"
+}
+
+private func amount(_ id: String, in result: CalculationResult) -> Decimal {
+    result.lines.first { $0.id == id }?.amount ?? 0
+}
+
+private func rateChipTitle(state: CalculatorViewState, ruleSet: TaxRuleSet) -> String {
+    state.usesCustomVATRate ? "TVA \(state.customVATRateText) %" : "TVA \(state.activeVATRate(ruleSet: ruleSet).percentText)"
+}
+
+private func profileShortLabel(_ profileId: TaxProfileID) -> String {
+    switch profileId {
+    case .microBICSale:
+        return "Micro-BIC vente"
+    case .microBICService:
+        return "Micro-BIC presta"
+    case .microBNCServiceGeneral:
+        return "Micro-BNC"
     }
 }
 
@@ -606,7 +1499,7 @@ private struct ActionBar: View {
             )
 
             ActionButton(
-                title: isPro ? "Détail" : "Détail Pro",
+                title: "Détail",
                 systemImage: isPro ? "list.bullet.rectangle" : "lock.fill",
                 action: onDetails
             )
@@ -671,339 +1564,6 @@ private struct SegmentButton: View {
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
         .buttonStyle(.plain)
-    }
-}
-
-private struct LockedModePreviewView: View {
-    @Environment(\.dismiss) private var dismiss
-
-    let mode: CalculationMode
-    let onShowPaywall: () -> Void
-
-    var body: some View {
-        NavigationStack {
-            VStack(alignment: .leading, spacing: 22) {
-                Image(systemName: mode.previewIcon)
-                    .font(.system(size: 34, weight: .semibold))
-                    .foregroundStyle(.orange)
-                    .frame(width: 54, height: 54)
-                    .background(Color.orange.opacity(0.16))
-                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(mode.intentTitle)
-                        .font(.system(size: 30, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .fixedSize(horizontal: false, vertical: true)
-
-                    Text(mode.lockedPreviewPromise)
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.72))
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-
-                Text(mode.lockedPreviewExample)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.86))
-                    .padding(16)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.white.opacity(0.08))
-                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-
-                Spacer()
-
-                Button(action: onShowPaywall) {
-                    Label("Voir la version Pro", systemImage: "lock.open.fill")
-                        .font(.system(size: 17, weight: .semibold))
-                        .frame(maxWidth: .infinity, minHeight: 54)
-                        .background(Color.orange)
-                        .foregroundStyle(.black)
-                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                }
-                .buttonStyle(.plain)
-            }
-            .padding(22)
-            .background(Color.black.ignoresSafeArea())
-            .navigationTitle("Aperçu Pro")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Fermer") {
-                        dismiss()
-                    }
-                    .foregroundStyle(.white)
-                }
-            }
-        }
-        .preferredColorScheme(.dark)
-    }
-}
-
-private struct CalculationSettingsView: View {
-    @Environment(\.dismiss) private var dismiss
-
-    @Binding var state: CalculatorViewState
-    let ruleSet: TaxRuleSet
-    let isPro: Bool
-    let onLockedMode: (CalculationMode) -> Void
-
-    var body: some View {
-        NavigationStack {
-            List {
-                Section {
-                    CurrentModeSummary(state: state, ruleSet: ruleSet)
-                }
-
-                Section("Que voulez-vous calculer ?") {
-                    ForEach(CalculationMode.allCases) { mode in
-                        SettingOptionRow(
-                            title: mode.intentTitle,
-                            subtitle: mode.settingsDescription,
-                            isSelected: state.selectedMode == mode,
-                            systemImage: mode.requiresPro && !isPro ? "lock.fill" : nil,
-                            action: {
-                                if ProAccessPolicy.isAllowed(.mode(mode), isPro: isPro) {
-                                    state.selectMode(mode)
-                                } else {
-                                    dismiss()
-                                    onLockedMode(mode)
-                                }
-                            }
-                        )
-                    }
-                }
-
-                Section("Comment lire le montant saisi ?") {
-                    modeSettings
-                }
-
-                Section(vatSectionTitle) {
-                    vatSettings
-                }
-
-                Section("Prudence") {
-                    Text("Barèmes vérifiés le 14/05/2026")
-                        .font(.body.weight(.semibold))
-
-                    Text("Estimation indicative. Cette calculette ne remplace pas une déclaration officielle ni un conseil adapté à votre situation.")
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .navigationTitle("Réglages")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Terminé") {
-                        dismiss()
-                    }
-                }
-            }
-        }
-        .preferredColorScheme(.dark)
-    }
-
-    @ViewBuilder
-    private var modeSettings: some View {
-        switch state.selectedMode {
-        case .vat:
-            ForEach(VATCalculationKind.allCases) { kind in
-                SettingOptionRow(
-                    title: vatKindQuestionTitle(kind),
-                    subtitle: vatKindSubtitle(kind),
-                    isSelected: state.vatCalculationKind == kind,
-                    action: {
-                        state.vatCalculationKind = kind
-                        state.activeEntryField = .amount
-                    }
-                )
-            }
-        case .independent:
-            profileRows(question: "Quel profil utiliser ?")
-            amountKindRows(selection: $state.amountKind, prefix: "Montant saisi")
-            SettingToggleRow(
-                title: "Versement libératoire",
-                subtitle: "Ajoute l'estimation du versement libératoire au calcul.",
-                isOn: state.vflEnabled,
-                action: { state.vflEnabled.toggle() }
-            )
-            SettingToggleRow(
-                title: "Inclure la CFP",
-                subtitle: "Ajoute une réserve prudente pour la CFP.",
-                isOn: state.includeCFPReserve,
-                action: { state.includeCFPReserve.toggle() }
-            )
-        case .netGoal:
-            profileRows(question: "Quel profil utiliser ?")
-            SettingToggleRow(
-                title: "Versement libératoire",
-                subtitle: "Intègre le versement libératoire dans le prix à facturer.",
-                isOn: state.vflEnabled,
-                action: { state.vflEnabled.toggle() }
-            )
-            SettingToggleRow(
-                title: "Inclure la CFP",
-                subtitle: "Majore le montant HT nécessaire pour couvrir la CFP.",
-                isOn: state.includeCFPInNetGoal,
-                action: { state.includeCFPInNetGoal.toggle() }
-            )
-        case .margin:
-            ForEach(MarginInputField.allCases) { field in
-                SettingOptionRow(
-                    title: "Le clavier modifie \(field.rawValue.lowercased())",
-                    subtitle: "Le clavier modifie ce montant.",
-                    isSelected: state.activeMarginField == field,
-                    action: { state.selectMarginField(field) }
-                )
-            }
-            amountKindRows(selection: $state.purchaseKind, prefix: "Achat")
-            amountKindRows(selection: $state.saleKind, prefix: "Vente")
-            SettingToggleRow(
-                title: "TVA déductible",
-                subtitle: "Déduit la TVA de l'achat dans le calcul de TVA nette.",
-                isOn: state.vatDeductibleOnPurchase,
-                action: { state.vatDeductibleOnPurchase.toggle() }
-            )
-        }
-    }
-
-    private var vatSectionTitle: String {
-        state.selectedMode == .vat ? "Quel taux de TVA utiliser ?" : "Facturez-vous la TVA ?"
-    }
-
-    @ViewBuilder
-    private var vatSettings: some View {
-        if state.selectedMode != .vat {
-            SettingToggleRow(
-                title: state.franchiseInBase ? "Non, je suis en franchise en base" : "Oui, je facture la TVA",
-                subtitle: state.franchiseInBase ? "La TVA est neutralisée dans le calcul." : "La TVA est calculée avec le taux choisi.",
-                isOn: !state.franchiseInBase,
-                action: { state.toggleFranchiseInBase() }
-            )
-        }
-
-        if !state.franchiseInBase || state.selectedMode == .vat {
-            ForEach(ruleSet.vatRates) { rate in
-                SettingOptionRow(
-                    title: "Taux \(rate.label)",
-                    subtitle: "Utiliser ce taux pour les montants HT, TTC et TVA.",
-                    isSelected: !state.usesCustomVATRate && state.selectedVATRateId == rate.id,
-                    action: { state.selectVATRate(id: rate.id) }
-                )
-            }
-
-            SettingOptionRow(
-                title: "Taux personnalisé",
-                subtitle: "Le clavier saisit le pourcentage à utiliser.",
-                isSelected: state.usesCustomVATRate,
-                action: {
-                    state.selectCustomVATRate()
-                    dismiss()
-                }
-            )
-        }
-    }
-
-    private func profileRows(question: String) -> some View {
-        Group {
-            Text(question)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.secondary)
-
-            ForEach(ruleSet.microProfiles) { profile in
-                SettingOptionRow(
-                    title: profile.label,
-                    subtitle: "Utiliser ce profil pour les cotisations estimées.",
-                    isSelected: state.selectedProfileId == profile.id,
-                    action: { state.selectedProfileId = profile.id }
-                )
-            }
-        }
-    }
-
-    private func amountKindRows(
-        selection: Binding<AmountKind>,
-        prefix: String
-    ) -> some View {
-        Group {
-            SettingOptionRow(
-                title: "\(prefix) HT",
-                subtitle: "Le montant est hors taxe.",
-                isSelected: selection.wrappedValue == .ht,
-                action: { selection.wrappedValue = .ht }
-            )
-            SettingOptionRow(
-                title: "\(prefix) TTC",
-                subtitle: "Le montant inclut la TVA.",
-                isSelected: selection.wrappedValue == .ttc,
-                action: { selection.wrappedValue = .ttc }
-            )
-        }
-    }
-
-    private func vatKindSubtitle(_ kind: VATCalculationKind) -> String {
-        switch kind {
-        case .htToTTC:
-            return "Partir d'un montant HT pour obtenir le TTC."
-        case .ttcToHT:
-            return "Partir d'un montant TTC pour retrouver le HT."
-        case .vatOnly:
-            return "Afficher uniquement le montant de TVA."
-        }
-    }
-
-    private func vatKindQuestionTitle(_ kind: VATCalculationKind) -> String {
-        switch kind {
-        case .htToTTC:
-            return "Je pars du HT"
-        case .ttcToHT:
-            return "Je pars du TTC"
-        case .vatOnly:
-            return "Je veux seulement la TVA"
-        }
-    }
-}
-
-private struct CurrentModeSummary: View {
-    let state: CalculatorViewState
-    let ruleSet: TaxRuleSet
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(state.selectedMode.intentTitle)
-                .font(.title3.weight(.semibold))
-
-            Text(summaryText)
-                .font(.body)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .padding(.vertical, 4)
-    }
-
-    private var summaryText: String {
-        let rate = state.activeVATRate(ruleSet: ruleSet).percentText
-
-        switch state.selectedMode {
-        case .vat:
-            return "Calcul \(state.vatCalculationKind.rawValue), avec TVA \(rate)."
-        case .independent:
-            return "\(profileShortLabel), montant \(state.amountKind.rawValue), \(state.franchiseInBase ? "franchise en base" : "TVA \(rate)")."
-        case .netGoal:
-            return "\(profileShortLabel), \(state.franchiseInBase ? "sans TVA" : "TVA \(rate)")."
-        case .margin:
-            return "\(state.activeMarginField.rawValue) actif, achat \(state.purchaseKind.rawValue), vente \(state.saleKind.rawValue), \(state.franchiseInBase ? "sans TVA" : "TVA \(rate)")."
-        }
-    }
-
-    private var profileShortLabel: String {
-        switch state.selectedProfileId {
-        case .microBICSale:
-            return "Micro-BIC vente"
-        case .microBICService:
-            return "Micro-BIC prestation"
-        case .microBNCServiceGeneral:
-            return "Micro-BNC"
-        }
     }
 }
 
@@ -1261,6 +1821,17 @@ private enum PedagogicalDetailBuilder {
 }
 
 enum DecisionSummary {
+    static func copyText(
+        for state: CalculatorViewState,
+        result: CalculationResult,
+        ruleSet: TaxRuleSet
+    ) -> String {
+        let summary = lines(for: state, result: result, ruleSet: ruleSet)
+            .joined(separator: "\n")
+
+        return "\(result.mainLabel) : \(result.mainAmount.currencyText)\n\(summary)"
+    }
+
     static func lines(
         for state: CalculatorViewState,
         result: CalculationResult,
@@ -1321,9 +1892,10 @@ enum DecisionSummary {
         result: CalculationResult
     ) -> [String] {
         [
-            "Base cotisations : \(value("ca_ht", in: result)).",
+            "Montant HT : \(value("ca_ht", in: result)).",
             state.franchiseInBase ? "TVA non facturée." : "TVA à mettre de côté : \(value("vat", in: result)).",
-            "Net estimé : \(result.mainAmount.currencyText)."
+            "Cotisations estimées : \(value("social", in: result)).",
+            "Il te reste environ \(result.mainAmount.currencyText)."
         ]
     }
 
@@ -1333,11 +1905,12 @@ enum DecisionSummary {
     ) -> [String] {
         var lines = [
             "Objectif à garder : \(value("target", in: result)).",
-            "À facturer HT : \(value("required_ht", in: result))."
+            "Tu dois facturer environ \(value("required_ht", in: result)) HT."
         ]
 
         if state.vatApplicable {
-            lines.append("TTC indicatif : \(value("required_ttc", in: result)).")
+            lines.append("Soit \(value("required_ttc", in: result)) TTC.")
+            lines.append("TVA collectée : \(value("required_vat", in: result)).")
         }
 
         return lines
@@ -1470,65 +2043,27 @@ private extension CalculationMode {
     var intentTitle: String {
         switch self {
         case .vat:
-            return "Je convertis TVA"
+            return "TVA"
         case .independent:
-            return "Je facture"
+            return "Reste net"
         case .netGoal:
-            return "Je veux garder"
+            return "Objectif net"
         case .margin:
-            return "Je vérifie une marge"
+            return "Marge"
         }
     }
 
-    var settingsDescription: String {
-        switch self {
-        case .vat:
-            return "Convertir HT, TTC ou TVA seule."
-        case .independent:
-            return "Estimer le net après cotisations."
-        case .netGoal:
-            return "Remonter d'un objectif net vers un prix."
-        case .margin:
-            return "Comparer achat, vente, marge et TVA nette."
-        }
-    }
+}
 
-    var previewIcon: String {
+private extension VATCalculationKind {
+    var shortTitle: String {
         switch self {
-        case .vat:
-            return "percent"
-        case .independent:
-            return "person.crop.circle.badge.checkmark"
-        case .netGoal:
-            return "target"
-        case .margin:
-            return "chart.line.uptrend.xyaxis"
-        }
-    }
-
-    var lockedPreviewPromise: String {
-        switch self {
-        case .vat:
-            return "Convertissez rapidement HT, TTC et TVA."
-        case .independent:
-            return "Voyez ce qu'il reste vraiment après TVA et cotisations estimées."
-        case .netGoal:
-            return "Partez du montant à garder et obtenez un prix HT à facturer."
-        case .margin:
-            return "Vérifiez si une vente reste rentable une fois la TVA sortie."
-        }
-    }
-
-    var lockedPreviewExample: String {
-        switch self {
-        case .vat:
-            return "Exemple : 100 € HT deviennent 120 € TTC avec une TVA de 20 €."
-        case .independent:
-            return "Exemple : sur 1 200 € TTC, distinguez TVA, CA HT, cotisations et net indicatif."
-        case .netGoal:
-            return "Exemple : pour garder 2 500 €, obtenez le montant HT à facturer."
-        case .margin:
-            return "Exemple : achat 72 € TTC, vente 120 € TTC, marge et TVA nette en un coup d'oeil."
+        case .htToTTC:
+            return "HT vers TTC"
+        case .ttcToHT:
+            return "TTC vers HT"
+        case .vatOnly:
+            return "TVA seule"
         }
     }
 }

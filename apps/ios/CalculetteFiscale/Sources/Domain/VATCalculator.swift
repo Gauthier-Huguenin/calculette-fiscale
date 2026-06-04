@@ -13,7 +13,7 @@ enum CalculationMode: String, CaseIterable, Codable, Identifiable {
         case .vat:
             return "TVA"
         case .independent:
-            return "Net pro"
+            return "Reste net"
         case .netGoal:
             return "Objectif net"
         case .margin:
@@ -431,9 +431,7 @@ enum TaxCalculationEngine {
             + vflIncomeTax
             + (input.includeCFPInPrudentReserve ? cfpEstimate : 0)
         let mainAmount = input.vflEnabled ? netAfterVFL : netBeforeIncomeTax
-        let mainLabel = input.vflEnabled
-            ? "Estimation après cotisations et versement libératoire"
-            : "Estimation après cotisations"
+        let mainLabel = "Il te reste environ"
 
         var lines: [CalculationLine] = [
             .currency(id: "ca_ht", label: "CAHT retenu pour les cotisations", amount: normalized.ht, isEmphasized: true)
@@ -510,7 +508,7 @@ enum TaxCalculationEngine {
 
         return CalculationResult(
             mainAmount: requiredHT.currencyRounded,
-            mainLabel: "Montant HT à facturer",
+            mainLabel: "Tu dois facturer environ",
             lines: lines,
             formula: "Objectif net ÷ (1 − taux de cotisations\(input.vflEnabled ? " − versement libératoire" : "")\(input.includeCFPInRequiredAmount ? " − CFP" : ""))",
             warnings: warnings(

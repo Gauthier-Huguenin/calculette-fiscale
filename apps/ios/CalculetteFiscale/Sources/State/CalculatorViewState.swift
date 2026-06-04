@@ -46,6 +46,47 @@ struct CalculationHistoryEntry: Equatable, Codable, Identifiable {
     }
 }
 
+struct DefaultCalculatorSettings: Equatable, Codable {
+    var amountKind: AmountKind = .ht
+    var purchaseKind: AmountKind = .ht
+    var saleKind: AmountKind = .ht
+    var selectedVATRateId = "vat_standard"
+    var usesCustomVATRate = false
+    var customVATRateText = "20"
+    var selectedProfileId: TaxProfileID = .microBNCServiceGeneral
+    var franchiseInBase = false
+    var vflEnabled = false
+    var includeCFPReserve = true
+    var includeCFPInNetGoal = false
+    var vatDeductibleOnPurchase = true
+
+    static let standard = DefaultCalculatorSettings()
+}
+
+enum CalculatorDefaultsStore {
+    private static let key = "calculette_fiscale.defaults.v1"
+
+    static func load() -> DefaultCalculatorSettings {
+        guard let data = UserDefaults.standard.data(forKey: key) else {
+            return .standard
+        }
+
+        return (try? JSONDecoder().decode(DefaultCalculatorSettings.self, from: data)) ?? .standard
+    }
+
+    static func save(_ settings: DefaultCalculatorSettings) {
+        guard let data = try? JSONEncoder().encode(settings) else {
+            return
+        }
+
+        UserDefaults.standard.set(data, forKey: key)
+    }
+
+    static func clear() {
+        UserDefaults.standard.removeObject(forKey: key)
+    }
+}
+
 enum CalculationHistoryStore {
     private static let key = "calculette_fiscale.history.v1"
     private static let limit = 50
@@ -73,7 +114,7 @@ enum CalculationHistoryStore {
 }
 
 struct CalculatorViewState: Equatable {
-    var selectedMode: CalculationMode = .vat
+    var selectedMode: CalculationMode = .independent
     var amountText = "0"
     var customVATRateText = "20"
     var purchaseText = "0"
@@ -97,6 +138,23 @@ struct CalculatorViewState: Equatable {
     var arithmeticError: String?
     var shouldReplaceActiveText = false
     var history: [CalculationHistoryEntry] = CalculationHistoryStore.load()
+
+    init() {}
+
+    init(defaults: DefaultCalculatorSettings) {
+        amountKind = defaults.amountKind
+        purchaseKind = defaults.purchaseKind
+        saleKind = defaults.saleKind
+        selectedVATRateId = defaults.selectedVATRateId
+        usesCustomVATRate = defaults.usesCustomVATRate
+        customVATRateText = defaults.customVATRateText
+        selectedProfileId = defaults.selectedProfileId
+        franchiseInBase = defaults.franchiseInBase
+        vflEnabled = defaults.vflEnabled
+        includeCFPReserve = defaults.includeCFPReserve
+        includeCFPInNetGoal = defaults.includeCFPInNetGoal
+        vatDeductibleOnPurchase = defaults.vatDeductibleOnPurchase
+    }
 
     var vatApplicable: Bool {
         !franchiseInBase
