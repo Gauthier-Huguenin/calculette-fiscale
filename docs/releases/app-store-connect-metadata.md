@@ -37,7 +37,7 @@ Limites Apple retenues au 2026-05-21 :
 - Bundle ID : `io.hgnn.calculettefiscale`
 - SKU recommande : `io.hgnn.calculettefiscale`
 - Version marketing : `1.1.0`
-- Build : `3`
+- Build : `4`
 - Cible minimum : `iOS 17.0`
 - Apple Developer Team : `393ZW5QCU6`
 - Langue principale : `Francais`
