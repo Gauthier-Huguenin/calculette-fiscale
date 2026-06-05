@@ -1067,7 +1067,7 @@ private struct CalculatorPickerSheet: View {
     private var content: some View {
         switch picker {
         case .vatRate:
-            Section("Taux usuels") {
+            Section("Taux standards") {
                 ForEach(ruleSet.vatRates) { rate in
                     PickerOptionRow(
                         title: rate.label,
@@ -1082,13 +1082,20 @@ private struct CalculatorPickerSheet: View {
             }
 
             Section("Taux personnalisé") {
-                TextField("20", text: $state.customVATRateText)
-                    .keyboardType(.decimalPad)
-                PickerOptionRow(
-                    title: "\(state.customVATRateText) %",
-                    subtitle: "Utiliser ce taux pour le calcul courant.",
+                CustomVATRateRow(
+                    rateText: $state.customVATRateText,
                     isSelected: state.usesCustomVATRate,
-                    action: {
+                    subtitle: "Modifiable, utilisé seulement si cette option est cochée.",
+                    onRateChange: { newValue in
+                        let sanitized = AmountInputSanitizer.sanitize(newValue)
+                        if sanitized != state.customVATRateText {
+                            state.customVATRateText = sanitized
+                        }
+                    },
+                    onSelect: {
+                        if state.customVATRateText.isEmpty {
+                            state.customVATRateText = "20"
+                        }
                         state.usesCustomVATRate = true
                         state.activeEntryField = .amount
                         dismiss()
@@ -1262,9 +1269,16 @@ private struct DefaultSettingsView: View {
         NavigationStack {
             List {
                 Section("Valeurs par défaut") {
-                    defaultAmountKindRows(selection: $settings.amountKind, prefix: "Reste net")
-                    defaultAmountKindRows(selection: $settings.purchaseKind, prefix: "Achat marge")
-                    defaultAmountKindRows(selection: $settings.saleKind, prefix: "Vente marge")
+                    SettingSegmentedRow(
+                        title: "Montant facturé par défaut",
+                        subtitle: "Format de départ pour Reste net.",
+                        selection: amountKindBinding
+                    )
+                    SettingSegmentedRow(
+                        title: "Marge par défaut",
+                        subtitle: "Achat et vente démarrent dans le même format.",
+                        selection: marginAmountKindBinding
+                    )
                 }
 
                 Section("TVA") {
@@ -1281,22 +1295,23 @@ private struct DefaultSettingsView: View {
                         )
                     }
 
-                    TextField("Taux personnalisé", text: $settings.customVATRateText)
-                        .keyboardType(.decimalPad)
-
-                    SettingOptionRow(
-                        title: "\(settings.customVATRateText) %",
-                        subtitle: "Utiliser le taux personnalisé par défaut.",
+                    CustomVATRateRow(
+                        rateText: $settings.customVATRateText,
                         isSelected: settings.usesCustomVATRate,
-                        action: {
+                        subtitle: "Modifiable, utilisé par défaut si cette option est cochée.",
+                        onRateChange: updateCustomVATRateText,
+                        onSelect: {
+                            if settings.customVATRateText.isEmpty {
+                                settings.customVATRateText = "20"
+                            }
                             settings.usesCustomVATRate = true
                             onSave(settings)
                         }
                     )
 
                     SettingToggleRow(
-                        title: "Franchise en base",
-                        subtitle: "Neutralise la TVA par défaut hors calculette TVA.",
+                        title: "Franchise en base par défaut",
+                        subtitle: "Démarre les calculettes net et marge sans TVA facturée.",
                         isOn: settings.franchiseInBase,
                         action: {
                             settings.franchiseInBase.toggle()
@@ -1319,10 +1334,10 @@ private struct DefaultSettingsView: View {
                     }
                 }
 
-                Section("Options") {
+                Section("Options avancées") {
                     SettingToggleRow(
                         title: "Versement libératoire",
-                        subtitle: "Option activée par défaut pour les calculettes net.",
+                        subtitle: "Ajoute une estimation d'impôt si vous avez choisi cette option.",
                         isOn: settings.vflEnabled,
                         action: {
                             settings.vflEnabled.toggle()
@@ -1330,8 +1345,8 @@ private struct DefaultSettingsView: View {
                         }
                     )
                     SettingToggleRow(
-                        title: "CFP dans Reste net",
-                        subtitle: "Ajoute une réserve CFP par défaut.",
+                        title: "Inclure la CFP dans Reste net",
+                        subtitle: "Ajoute une petite réserve de contribution formation.",
                         isOn: settings.includeCFPReserve,
                         action: {
                             settings.includeCFPReserve.toggle()
@@ -1339,8 +1354,8 @@ private struct DefaultSettingsView: View {
                         }
                     )
                     SettingToggleRow(
-                        title: "CFP dans Objectif net",
-                        subtitle: "Majore le montant HT par défaut.",
+                        title: "Inclure la CFP dans Objectif net",
+                        subtitle: "Ajoute une petite réserve de contribution formation.",
                         isOn: settings.includeCFPInNetGoal,
                         action: {
                             settings.includeCFPInNetGoal.toggle()
@@ -1349,7 +1364,7 @@ private struct DefaultSettingsView: View {
                     )
                     SettingToggleRow(
                         title: "TVA achat déductible",
-                        subtitle: "Déduit la TVA d'achat par défaut dans Marge.",
+                        subtitle: "Déduit la TVA sur les achats dans le calcul de marge.",
                         isOn: settings.vatDeductibleOnPurchase,
                         action: {
                             settings.vatDeductibleOnPurchase.toggle()
@@ -1377,30 +1392,37 @@ private struct DefaultSettingsView: View {
         .preferredColorScheme(.dark)
     }
 
-    private func defaultAmountKindRows(
-        selection: Binding<AmountKind>,
-        prefix: String
-    ) -> some View {
-        Group {
-            SettingOptionRow(
-                title: "\(prefix) HT",
-                subtitle: "Montant hors taxe par défaut.",
-                isSelected: selection.wrappedValue == .ht,
-                action: {
-                    selection.wrappedValue = .ht
-                    onSave(settings)
-                }
-            )
-            SettingOptionRow(
-                title: "\(prefix) TTC",
-                subtitle: "Montant toutes taxes comprises par défaut.",
-                isSelected: selection.wrappedValue == .ttc,
-                action: {
-                    selection.wrappedValue = .ttc
-                    onSave(settings)
-                }
-            )
+    private var amountKindBinding: Binding<AmountKind> {
+        Binding(
+            get: {
+                settings.amountKind
+            },
+            set: { newValue in
+                settings.amountKind = newValue
+                onSave(settings)
+            }
+        )
+    }
+
+    private var marginAmountKindBinding: Binding<AmountKind> {
+        Binding(
+            get: {
+                settings.unifiedMarginAmountKind
+            },
+            set: { newValue in
+                settings.unifiedMarginAmountKind = newValue
+                onSave(settings)
+            }
+        )
+    }
+
+    private func updateCustomVATRateText(_ newValue: String) {
+        let sanitized = AmountInputSanitizer.sanitize(newValue)
+        if sanitized != settings.customVATRateText {
+            settings.customVATRateText = sanitized
         }
+
+        onSave(settings)
     }
 }
 
@@ -1413,7 +1435,11 @@ private func amount(_ id: String, in result: CalculationResult) -> Decimal {
 }
 
 private func rateChipTitle(state: CalculatorViewState, ruleSet: TaxRuleSet) -> String {
-    state.usesCustomVATRate ? "TVA \(state.customVATRateText) %" : "TVA \(state.activeVATRate(ruleSet: ruleSet).percentText)"
+    state.usesCustomVATRate ? "TVA \(customVATRateDisplayText(state.customVATRateText)) %" : "TVA \(state.activeVATRate(ruleSet: ruleSet).percentText)"
+}
+
+private func customVATRateDisplayText(_ text: String) -> String {
+    text.isEmpty ? "0" : text
 }
 
 private func profileShortLabel(_ profileId: TaxProfileID) -> String {
@@ -1660,6 +1686,85 @@ private struct SegmentButton: View {
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
         .buttonStyle(.plain)
+    }
+}
+
+private struct SettingSegmentedRow: View {
+    let title: String
+    let subtitle: String
+    @Binding var selection: AmountKind
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(.primary)
+                Text(subtitle)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Picker(title, selection: $selection) {
+                ForEach(AmountKind.allCases) { kind in
+                    Text(kind.rawValue).tag(kind)
+                }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+        }
+        .padding(.vertical, 6)
+    }
+}
+
+private struct CustomVATRateRow: View {
+    @Binding var rateText: String
+    let isSelected: Bool
+    let subtitle: String
+    let onRateChange: (String) -> Void
+    let onSelect: () -> Void
+
+    var body: some View {
+        HStack(spacing: 14) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Taux personnalisé")
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(.primary)
+                Text(subtitle)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 12)
+
+            HStack(spacing: 6) {
+                TextField("20", text: $rateText)
+                    .keyboardType(.decimalPad)
+                    .multilineTextAlignment(.trailing)
+                    .font(.body.weight(.semibold))
+                    .frame(width: 54)
+                    .accessibilityLabel("Taux personnalisé TVA")
+                    .accessibilityValue("\(customVATRateDisplayText(rateText)) %")
+                    .onChange(of: rateText) { _, newValue in
+                        onRateChange(newValue)
+                    }
+
+                Text("%")
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(.secondary)
+
+                Button(action: onSelect) {
+                    Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                        .foregroundStyle(isSelected ? Color.orange : Color.secondary)
+                        .font(.system(size: 24, weight: .semibold))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Utiliser le taux personnalisé")
+            }
+        }
+        .frame(minHeight: 58)
     }
 }
 

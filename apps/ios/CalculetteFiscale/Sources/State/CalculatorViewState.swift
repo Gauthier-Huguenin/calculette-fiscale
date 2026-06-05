@@ -61,6 +61,16 @@ struct DefaultCalculatorSettings: Equatable, Codable {
     var vatDeductibleOnPurchase = true
 
     static let standard = DefaultCalculatorSettings()
+
+    var unifiedMarginAmountKind: AmountKind {
+        get {
+            purchaseKind == .ttc && saleKind == .ttc ? .ttc : .ht
+        }
+        set {
+            purchaseKind = newValue
+            saleKind = newValue
+        }
+    }
 }
 
 enum CalculatorDefaultsStore {

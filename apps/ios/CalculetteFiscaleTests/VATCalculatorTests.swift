@@ -393,9 +393,15 @@ final class VATCalculatorTests: XCTestCase {
     func testStoredDefaultsApplyToNewAppState() {
         var defaults = DefaultCalculatorSettings.standard
         defaults.amountKind = .ttc
+        defaults.unifiedMarginAmountKind = .ttc
+        defaults.usesCustomVATRate = true
+        defaults.customVATRateText = "15"
         defaults.selectedProfileId = .microBICService
         defaults.franchiseInBase = true
         defaults.vflEnabled = true
+        defaults.includeCFPReserve = false
+        defaults.includeCFPInNetGoal = true
+        defaults.vatDeductibleOnPurchase = false
 
         CalculatorDefaultsStore.save(defaults)
 
@@ -403,9 +409,61 @@ final class VATCalculatorTests: XCTestCase {
 
         XCTAssertEqual(state.selectedMode, .independent)
         XCTAssertEqual(state.amountKind, .ttc)
+        XCTAssertEqual(state.purchaseKind, .ttc)
+        XCTAssertEqual(state.saleKind, .ttc)
+        XCTAssertTrue(state.usesCustomVATRate)
+        XCTAssertEqual(state.customVATRateText, "15")
         XCTAssertEqual(state.selectedProfileId, .microBICService)
         XCTAssertTrue(state.franchiseInBase)
         XCTAssertTrue(state.vflEnabled)
+        XCTAssertFalse(state.includeCFPReserve)
+        XCTAssertTrue(state.includeCFPInNetGoal)
+        XCTAssertFalse(state.vatDeductibleOnPurchase)
+    }
+
+    func testStoredVATDefaultAppliesToCurrentCalculator() {
+        var defaults = DefaultCalculatorSettings.standard
+        defaults.usesCustomVATRate = true
+        defaults.customVATRateText = "15"
+
+        CalculatorDefaultsStore.save(defaults)
+
+        var state = CalculatorViewState(defaults: CalculatorDefaultsStore.load())
+        state.selectMode(.vat)
+        state.amountText = "100"
+
+        let result = state.currentResult()
+
+        XCTAssertLine(result, "vat", equals: "15.00")
+        XCTAssertLine(result, "ttc", equals: "115.00")
+    }
+
+    func testUnifiedMarginDefaultAppliesToMarginCalculator() {
+        var defaults = DefaultCalculatorSettings.standard
+        defaults.unifiedMarginAmountKind = .ttc
+
+        CalculatorDefaultsStore.save(defaults)
+
+        var state = CalculatorViewState(defaults: CalculatorDefaultsStore.load())
+        state.selectMode(.margin)
+        state.purchaseText = "72"
+        state.saleText = "120"
+
+        let result = state.currentResult()
+
+        XCTAssertEqual(state.purchaseKind, .ttc)
+        XCTAssertEqual(state.saleKind, .ttc)
+        XCTAssertLine(result, "purchase_ht", equals: "60.00")
+        XCTAssertLine(result, "sale_ht", equals: "100.00")
+    }
+
+    func testUnifiedMarginDefaultUpdatesPurchaseAndSaleKinds() {
+        var defaults = DefaultCalculatorSettings.standard
+
+        defaults.unifiedMarginAmountKind = .ttc
+
+        XCTAssertEqual(defaults.purchaseKind, .ttc)
+        XCTAssertEqual(defaults.saleKind, .ttc)
     }
 
     func testStateMovedIndependentSettingsKeepSameCalculationInput() {
