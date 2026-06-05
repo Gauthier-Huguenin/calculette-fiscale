@@ -54,14 +54,20 @@ struct CalculatorShellView: View {
                             ruleSet: ruleSet,
                             copyFeedback: copyFeedback,
                             focusedInput: $focusedAmountInput,
-                            onPicker: { activePicker = $0 },
+                            onPicker: { picker in
+                                focusedAmountInput = nil
+                                activePicker = picker
+                            },
                             onCopy: { copyResult(result) },
                             onDetails: openDetails
                         )
 
                         ActionBar(
                             isPro: entitlementStore.isPro,
-                            onSettings: { isShowingSettings = true },
+                            onSettings: {
+                                focusedAmountInput = nil
+                                isShowingSettings = true
+                            },
                             onDetails: openDetails
                         )
                     }
@@ -72,16 +78,16 @@ struct CalculatorShellView: View {
                 .scrollDismissesKeyboard(.interactively)
             }
         }
-        .preferredColorScheme(.dark)
-        .toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                Button("Terminé") {
+        .safeAreaInset(edge: .bottom) {
+            if focusedAmountInput != nil {
+                AmountInputDoneBar {
                     focusedAmountInput = nil
                 }
-                .fontWeight(.semibold)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
+        .preferredColorScheme(.dark)
+        .animation(.easeInOut(duration: 0.18), value: focusedAmountInput != nil)
         .onChange(of: entitlementStore.isPro) { _, isPro in
             if isPro {
                 isShowingPaywall = false
@@ -154,6 +160,8 @@ struct CalculatorShellView: View {
     }
 
     private func openHistory() {
+        focusedAmountInput = nil
+
         guard entitlementStore.isPro else {
             showPaywall()
             return
@@ -163,6 +171,8 @@ struct CalculatorShellView: View {
     }
 
     private func openDetails() {
+        focusedAmountInput = nil
+
         guard entitlementStore.isPro else {
             showPaywall()
             return
@@ -172,6 +182,7 @@ struct CalculatorShellView: View {
     }
 
     private func showPaywall() {
+        focusedAmountInput = nil
         isShowingPaywall = true
     }
 
@@ -849,6 +860,28 @@ private struct AmountInputPanel: View {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .stroke(Color.white.opacity(0.10), lineWidth: 1)
         )
+    }
+}
+
+private struct AmountInputDoneBar: View {
+    let onDone: () -> Void
+
+    var body: some View {
+        Button(action: onDone) {
+            Text("Terminé")
+                .font(.system(size: 17, weight: .semibold))
+                .frame(maxWidth: .infinity)
+                .frame(height: 46)
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(.black)
+        .background(Color.orange)
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .padding(.horizontal, 16)
+        .padding(.top, 8)
+        .padding(.bottom, 8)
+        .background(Color.black.opacity(0.92))
+        .accessibilityIdentifier("amountInputDoneButton")
     }
 }
 

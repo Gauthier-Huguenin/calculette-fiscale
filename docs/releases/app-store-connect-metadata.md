@@ -1,7 +1,7 @@
 # Metadonnees App Store Connect
 
 Source : preparation interne pour App Store Connect, mise a jour pour la version
-1.1.0 le 2026-06-04.
+1.1.0 le 2026-06-05.
 
 Ce fichier archive les champs editoriaux et de configuration a renseigner pour
 la publication de Calculette Fiscale. Les coordonnees personnelles de
@@ -37,7 +37,7 @@ Limites Apple retenues au 2026-05-21 :
 - Bundle ID : `io.hgnn.calculettefiscale`
 - SKU recommande : `io.hgnn.calculettefiscale`
 - Version marketing : `1.1.0`
-- Build : `4`
+- Build : `5`
 - Cible minimum : `iOS 17.0`
 - Apple Developer Team : `393ZW5QCU6`
 - Langue principale : `Francais`

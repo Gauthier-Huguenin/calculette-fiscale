@@ -48,7 +48,7 @@ Espaces prevus plus tard :
 - UI : SwiftUI, interface sombre avec 4 calculettes métier depuis `1.1.0`
 - Cible minimum : iOS 17
 - Version marketing : `1.1.0`
-- Build : `4`
+- Build : `5`
 - Domaine : calculs deterministes dans `Sources/Domain`, constantes fiscales versionnees avec le jeu de regles `fr-2026-v1-2026-05-14`
 - Etat local : `Sources/State`, historique encode en JSON dans `UserDefaults`, limite aux 50 derniers calculs
 - Monetisation : StoreKit 2 dans `Sources/Store`, achat unique non-consommable `pro_lifetime`, fichier local `Resources/CalculetteFiscale.storekit`
