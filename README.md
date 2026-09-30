@@ -168,3 +168,9 @@ Limites V1 :
 
 - Pas d'ACRE, CFE, IR progressif, Cipav, SASU, EURL, DOM, Corse, activites mixtes ou optimisation fiscale.
 - Les resultats fiscaux sont des estimations indicatives. Ils ne remplacent pas une declaration officielle ni un conseil adapte.
+
+## Statut du projet
+
+Projet ouvert et archive. L'app reste disponible sur l'App Store, mais le depot n'est plus maintenu activement. Le code est publie sous licence MIT (voir `LICENSE`) pour servir de reference : app iOS SwiftUI native, moteur de calcul fiscal deterministe versionne dans `docs/fiscal-rules-research-2026.md`, monetisation StoreKit 2 sans backend.
+
+Les constantes fiscales sont celles de 2026. Elles ne seront plus mises a jour ici : verifiez les baremes en vigueur avant tout reel usage comptable ou déclaratif.
