@@ -1,7 +1,7 @@
 # Metadonnees App Store Connect
 
 Source : preparation interne pour App Store Connect, mise a jour pour la version
-1.0.1 le 2026-05-21T20:58:53+0400.
+1.1.0 le 2026-06-05.
 
 Ce fichier archive les champs editoriaux et de configuration a renseigner pour
 la publication de Calculette Fiscale. Les coordonnees personnelles de
@@ -36,8 +36,8 @@ Limites Apple retenues au 2026-05-21 :
 - Sous-titre : `TVA, net pro & marge`
 - Bundle ID : `io.hgnn.calculettefiscale`
 - SKU recommande : `io.hgnn.calculettefiscale`
-- Version marketing : `1.0.1`
-- Build : `2`
+- Version marketing : `1.1.0`
+- Build : `5`
 - Cible minimum : `iOS 17.0`
 - Apple Developer Team : `393ZW5QCU6`
 - Langue principale : `Francais`
@@ -75,10 +75,10 @@ Compteur : 20 caracteres sur 30.
 ### Texte promotionnel
 
 ```text
-TVA, net pro, objectif net et marge dans une calculette française. Sans compte, sans pub, sans abonnement.
+4 calculettes métier pour lire TVA, reste net, objectif net et marge. Plus clair, plus direct, sans compte ni abonnement.
 ```
 
-Compteur : 106 caracteres sur 170.
+Compteur : 122 caracteres sur 170.
 
 ### Mots-cles
 
@@ -100,35 +100,37 @@ Notes ASO :
 ### Description
 
 ```text
-Calculette Fiscale est la calculette française pour comprendre vite ce qu'il y a derrière un montant : TVA, HT, TTC, net pro estimé, objectif net et marge.
+Calculette Fiscale est la calculette française pour comprendre vite ce qu'il y a derrière un montant : TVA, HT, TTC, reste net estimé, objectif net et marge.
 
 Elle aide les indépendants, freelances, micro-entrepreneurs, dirigeants de TPE, artisans, commerçants et consultants à préparer un devis, vérifier un prix ou lire une marge sans ouvrir un tableur.
 
-TVA
-Passez du HT au TTC, du TTC au HT, ou calculez uniquement la TVA. Les taux français usuels sont inclus : 20 %, 10 %, 5,5 % et 2,1 %. Vous pouvez aussi saisir un taux personnalisé.
+L'app est organisée autour de 4 calculettes métier simples : Reste net, Objectif net, TVA et Marge.
 
-NET PRO
-Estimez ce qu'il reste après cotisations pour les profils micro pris en charge dans la V1 : Micro-BIC vente, Micro-BIC prestation et Micro-BNC prestation. L'app distingue le chiffre d'affaires HT, la TVA à mettre de côté, les cotisations estimées et le net indicatif.
+RESTE NET
+Saisissez un montant facturé ou encaissé, en HT ou en TTC, et voyez ce qu'il reste environ après TVA et cotisations. L'app distingue le montant HT, le montant TTC, la TVA à mettre de côté, les cotisations estimées et le net indicatif.
 
 OBJECTIF NET
 Partez du montant que vous voulez garder et obtenez une estimation du montant HT à facturer, avec le TTC si la TVA s'applique. Pratique pour cadrer une mission, préparer un devis ou vérifier un prix avant de l'annoncer.
 
-MARGE
-Comparez un prix d'achat et un prix de vente. Calculette Fiscale calcule la marge brute HT, le taux de marge, le taux de marque, la TVA collectée, la TVA déductible et la TVA nette.
+TVA
+Passez du HT au TTC, du TTC au HT, ou calculez uniquement la TVA. Le taux de TVA est visible et modifiable directement. Les taux français usuels sont inclus : 20 %, 10 %, 5,5 % et 2,1 %. Vous pouvez aussi saisir un taux personnalisé.
 
-FORMULES
-Les résultats Pro affichent le détail du calcul, la formule utilisée, les avertissements utiles et l'identifiant du jeu de règles fiscales. Les barèmes V1 sont datés et sourcés dans la documentation interne de l'app.
+MARGE
+Comparez un prix d'achat et un prix de vente dans un mini-formulaire clair. Calculette Fiscale calcule la marge brute HT, le taux de marge, le taux de marque, la TVA collectée, la TVA déductible et la TVA nette.
+
+PARAMÈTRES DIRECTS
+Les paramètres importants sont visibles dans chaque calculette : HT/TTC, taux de TVA, profil fiscal, franchise en base, versement libératoire, CFP et TVA sur achat quand ils s'appliquent. Les réglages servent aux valeurs par défaut de l'app.
 
 CONFIDENTIALITÉ
 Pas de compte. Pas de publicité. Pas de backend. Les montants et l'historique restent stockés localement sur votre iPhone. L'achat Pro utilise StoreKit 2, le système d'achat intégré d'Apple.
 
 GRATUIT, PUIS PRO SI VOUS EN AVEZ BESOIN
-La calculette standard, le mode TVA et la copie du résultat principal sont gratuits. La version Pro débloque Net pro, Objectif net, Marge, l'historique et le détail complet des formules avec un achat unique, sans abonnement.
+Les calculs de base TVA, Reste net, Objectif net et Marge simple sont gratuits. La version Pro ajoute des fonctions de confort comme l'historique, le détail complet des formules et le soutien à une app française maintenue, avec un achat unique, sans abonnement.
 
 Calculette Fiscale fournit des estimations indicatives. Elle ne remplace pas une déclaration officielle, un expert-comptable ou un conseil fiscal adapté à votre situation.
 ```
 
-Compteur : 2 113 caracteres sur 4 000.
+Compteur : 2 592 caracteres sur 4 000.
 
 ## Achats integres
 
@@ -143,12 +145,12 @@ Compteur : 2 113 caracteres sur 4 000.
 Localisation francaise :
 
 - Nom d'affichage : `Calculette Fiscale Pro`
-- Description App Store Connect : `Net pro, marge, historique et formules.`
+- Description App Store Connect : `Historique, formules et confort.`
 
 Contraintes Apple :
 
 - Nom d'affichage : 24 caracteres sur 30.
-- Description : 39 caracteres sur 45.
+- Description : 32 caracteres sur 45.
 
 ## Verification Apple
 
@@ -161,7 +163,7 @@ Contraintes Apple :
 Remarques de verification proposees :
 
 ```text
-L'app ne necessite pas de compte et ne contient pas de backend. Les montants saisis et l'historique des calculs restent stockes localement sur l'appareil avec UserDefaults. La version Pro utilise StoreKit 2 avec l'achat non-consommable pro_lifetime. Le mode TVA et la copie du resultat principal restent utilisables sans achat. Les modes Net pro, Objectif net, Marge, l'historique et le detail complet des formules sont deverrouilles apres achat ou restauration.
+L'app ne necessite pas de compte et ne contient pas de backend. Les montants saisis et l'historique des calculs restent stockes localement sur l'appareil avec UserDefaults. La version Pro utilise StoreKit 2 avec l'achat non-consommable pro_lifetime. Les calculettes TVA, Reste net, Objectif net et Marge simple restent utilisables sans achat. L'historique et le detail complet des formules sont deverrouilles apres achat ou restauration.
 ```
 
 ## Confidentialite de l'app
@@ -207,29 +209,28 @@ final :
 Format prioritaire recommande : iPhone 6,9 pouces en portrait. Fournir 6
 captures, avec le meme style visuel que l'app et du texte court.
 
-1. `Tapez un montant. Voyez ce qu'il reste.`
-   - Ecran : mode TVA ou resultat principal lisible.
+1. `Reste net clair en quelques secondes.`
+   - Ecran : calculette Reste net.
    - Objectif : faire comprendre la promesse en moins de 5 secondes.
-2. `HT, TVA, TTC en un geste.`
-   - Ecran : mode TVA, taux 20 %, lignes HT, TVA et TTC.
+2. `HT, TVA, TTC sans tableur.`
+   - Ecran : calculette TVA, taux 20 %, lignes HT, TVA et TTC.
    - Objectif : capter les recherches TVA et HT/TTC.
-3. `Estimez votre net pro.`
-   - Ecran : mode Net pro avec Micro-BNC ou Micro-BIC.
-   - Objectif : montrer la difference avec une simple calculette TVA.
-4. `Fixez un prix depuis votre objectif net.`
-   - Ecran : mode Objectif net.
+3. `Objectif net, prix a facturer.`
+   - Ecran : calculette Objectif net.
    - Objectif : parler devis, mission et prix a facturer.
-5. `Controlez votre marge avant de vendre.`
-   - Ecran : mode Marge avec achat, vente, taux de marge et TVA nette.
+4. `Marge, achat, vente et TVA.`
+   - Ecran : calculette Marge avec achat, vente, taux de marge et TVA nette.
    - Objectif : toucher les dirigeants, artisans et commercants.
-6. `Formules claires. Donnees locales.`
-   - Ecran : detail du calcul ou historique.
+5. `Historique local en Pro.`
+   - Ecran : historique.
+   - Objectif : montrer le confort Pro sans bloquer la premiere valeur.
+6. `Reglages par defaut simples.`
+   - Ecran : reglages.
    - Objectif : rassurer sur la transparence et la confidentialite.
 
 Set brut capture le 2026-05-21 : 6 captures simulateur conservees dans
-`docs/releases/app-store-screenshots/raw/`. La cinquieme capture regroupe
-historique local et formules visibles. La sixieme montre les reglages
-personnalisables : taux de TVA, profil micro et options du calcul.
+`docs/releases/app-store-screenshots/raw/`. Ces captures documentent encore
+1.0.1 et doivent etre regenerees avant une soumission publique 1.1.0.
 
 Set final Canva le 2026-05-15 : 6 captures iPhone `1284 x 2778` conservees
 dans `docs/releases/app-store-screenshots/canva/`, pretes a etre versees dans

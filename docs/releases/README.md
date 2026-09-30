@@ -25,6 +25,10 @@ App Store Connect vivent dans `docs/releases/app-store-screenshots/canva/`.
 Les captures RAW iOS 1.0.1 utilisent des fixtures `DEBUG` lancees avec
 `CALCULETTE_SCREENSHOT_SCENARIO`.
 
+Pour iOS 1.1.0, les memes scenarios doivent etre regeneres apres la refonte en
+4 calculettes metier. Les captures 1.0.1 restent conservees tant qu'elles ne
+sont pas remplacees.
+
 Scenarios disponibles :
 
 - `01-tva-facture`
@@ -43,6 +47,7 @@ Chaque version doit avoir son propre fichier :
 ```text
 docs/releases/1.0.0.md
 docs/releases/1.0.1.md
+docs/releases/1.1.0.md
 ```
 
 La release GitHub publique ne doit etre creee qu'apres validation et publication

@@ -45,10 +45,10 @@ Espaces prevus plus tard :
 - Scheme : `CalculetteFiscale`
 - Bundle identifier : `io.hgnn.calculettefiscale`
 - Langue V1 : francais
-- UI : SwiftUI, interface sombre avec écran principal épuré depuis `1.0.1`
+- UI : SwiftUI, interface sombre avec 4 calculettes métier depuis `1.1.0`
 - Cible minimum : iOS 17
-- Version marketing : `1.0.1`
-- Build : `2`
+- Version marketing : `1.1.0`
+- Build : `5`
 - Domaine : calculs deterministes dans `Sources/Domain`, constantes fiscales versionnees avec le jeu de regles `fr-2026-v1-2026-05-14`
 - Etat local : `Sources/State`, historique encode en JSON dans `UserDefaults`, limite aux 50 derniers calculs
 - Monetisation : StoreKit 2 dans `Sources/Store`, achat unique non-consommable `pro_lifetime`, fichier local `Resources/CalculetteFiscale.storekit`
@@ -120,13 +120,15 @@ Workflow manuel dans Xcode :
 1. Ouvrir `apps/ios/CalculetteFiscale.xcodeproj`.
 2. Selectionner le scheme `CalculetteFiscale` et un simulateur iPhone.
 3. Verifier que la StoreKit Configuration du scheme pointe vers `CalculetteFiscale.storekit`.
-4. Lancer l'app, toucher `Independant`, `Objectif net`, `Marge`, l'historique ou le detail.
-5. Le paywall doit s'ouvrir. Acheter `Calculette Fiscale Pro` via la feuille StoreKit locale.
-6. Les modes Pro, l'historique et le detail complet doivent se debloquer immediatement.
+4. Lancer l'app et verifier que `Reste net`, `Objectif net`, `TVA` et `Marge` sont utilisables sans achat.
+5. Toucher l'historique ou le detail complet.
+6. Le paywall doit s'ouvrir. Acheter `Calculette Fiscale Pro` via la feuille StoreKit locale.
+7. L'historique et le detail complet doivent se debloquer immediatement.
 7. Pour rejouer le scenario, reinitialiser les transactions StoreKit locales dans Xcode, puis relancer l'app.
 
 La restauration utilise `AppStore.sync()` uniquement depuis le bouton `Restaurer mes achats`.
-Si le produit StoreKit ne se charge pas, le mode TVA et la copie du resultat principal restent utilisables.
+Si le produit StoreKit ne se charge pas, les quatre calculettes de base et la
+copie du resume restent utilisables.
 
 Configuration App Store Connect V1 publiee :
 
@@ -153,11 +155,14 @@ Configuration App Store Connect V1 publiee :
 
 ## V1 iOS
 
-Modes livres :
+Calculettes livrees :
 
+- Reste net : montant facture ou encaisse, HT/TTC, TVA a mettre de cote, cotisations estimees et net indicatif.
+- Objectif net : objectif a garder, montant HT a facturer, TTC indicatif si la TVA s'applique, TVA collectee et cotisations estimees.
 - TVA : HT vers TTC, TTC vers HT, TVA seule, taux 20 %, 10 %, 5,5 %, 2,1 % et taux personnalise.
-- Gratuit : calculette standard, TVA simple, taux TVA francais et copie du resultat principal.
-- Pro : Independant, Objectif net, Marge, historique et detail complet des formules.
+- Marge : prix d'achat, prix de vente, HT/TTC, marge brute HT, taux de marge, taux de marque et TVA.
+- Gratuit : TVA, Reste net, Objectif net, Marge simple et copie du resume.
+- Pro : historique, detail complet des formules et fonctions de confort.
 
 Limites V1 :
 

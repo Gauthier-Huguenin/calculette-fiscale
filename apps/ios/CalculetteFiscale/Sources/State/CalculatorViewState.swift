@@ -46,6 +46,57 @@ struct CalculationHistoryEntry: Equatable, Codable, Identifiable {
     }
 }
 
+struct DefaultCalculatorSettings: Equatable, Codable {
+    var amountKind: AmountKind = .ht
+    var purchaseKind: AmountKind = .ht
+    var saleKind: AmountKind = .ht
+    var selectedVATRateId = "vat_standard"
+    var usesCustomVATRate = false
+    var customVATRateText = "20"
+    var selectedProfileId: TaxProfileID = .microBNCServiceGeneral
+    var franchiseInBase = false
+    var vflEnabled = false
+    var includeCFPReserve = true
+    var includeCFPInNetGoal = false
+    var vatDeductibleOnPurchase = true
+
+    static let standard = DefaultCalculatorSettings()
+
+    var unifiedMarginAmountKind: AmountKind {
+        get {
+            purchaseKind == .ttc && saleKind == .ttc ? .ttc : .ht
+        }
+        set {
+            purchaseKind = newValue
+            saleKind = newValue
+        }
+    }
+}
+
+enum CalculatorDefaultsStore {
+    private static let key = "calculette_fiscale.defaults.v1"
+
+    static func load() -> DefaultCalculatorSettings {
+        guard let data = UserDefaults.standard.data(forKey: key) else {
+            return .standard
+        }
+
+        return (try? JSONDecoder().decode(DefaultCalculatorSettings.self, from: data)) ?? .standard
+    }
+
+    static func save(_ settings: DefaultCalculatorSettings) {
+        guard let data = try? JSONEncoder().encode(settings) else {
+            return
+        }
+
+        UserDefaults.standard.set(data, forKey: key)
+    }
+
+    static func clear() {
+        UserDefaults.standard.removeObject(forKey: key)
+    }
+}
+
 enum CalculationHistoryStore {
     private static let key = "calculette_fiscale.history.v1"
     private static let limit = 50
@@ -72,12 +123,58 @@ enum CalculationHistoryStore {
     }
 }
 
+enum AmountInputSanitizer {
+    static func sanitize(_ rawValue: String) -> String {
+        let normalized = rawValue
+            .replacingOccurrences(of: " ", with: "")
+            .replacingOccurrences(of: ".", with: ",")
+
+        var integerPart = ""
+        var fractionalPart = ""
+        var hasDecimalSeparator = false
+
+        for character in normalized {
+            if character.isNumber {
+                if hasDecimalSeparator {
+                    fractionalPart.append(character)
+                } else {
+                    integerPart.append(character)
+                }
+            } else if character == "," && !hasDecimalSeparator {
+                hasDecimalSeparator = true
+            }
+        }
+
+        if integerPart.isEmpty && !hasDecimalSeparator {
+            return ""
+        }
+
+        integerPart = normalizedIntegerPart(integerPart)
+
+        if hasDecimalSeparator {
+            return "\(integerPart),\(fractionalPart)"
+        }
+
+        return integerPart
+    }
+
+    static func shouldClearOnFocus(_ value: String) -> Bool {
+        let sanitized = sanitize(value)
+        return sanitized.isEmpty || sanitized == "0"
+    }
+
+    private static func normalizedIntegerPart(_ value: String) -> String {
+        let trimmed = value.drop { $0 == "0" }
+        return trimmed.isEmpty ? "0" : String(trimmed)
+    }
+}
+
 struct CalculatorViewState: Equatable {
-    var selectedMode: CalculationMode = .vat
-    var amountText = "0"
+    var selectedMode: CalculationMode = .independent
+    var amountText = ""
     var customVATRateText = "20"
-    var purchaseText = "0"
-    var saleText = "0"
+    var purchaseText = ""
+    var saleText = ""
     var activeEntryField: CalculatorEntryField = .amount
     var activeMarginField: MarginInputField = .sale
     var vatCalculationKind: VATCalculationKind = .htToTTC
@@ -97,6 +194,23 @@ struct CalculatorViewState: Equatable {
     var arithmeticError: String?
     var shouldReplaceActiveText = false
     var history: [CalculationHistoryEntry] = CalculationHistoryStore.load()
+
+    init() {}
+
+    init(defaults: DefaultCalculatorSettings) {
+        amountKind = defaults.amountKind
+        purchaseKind = defaults.purchaseKind
+        saleKind = defaults.saleKind
+        selectedVATRateId = defaults.selectedVATRateId
+        usesCustomVATRate = defaults.usesCustomVATRate
+        customVATRateText = defaults.customVATRateText
+        selectedProfileId = defaults.selectedProfileId
+        franchiseInBase = defaults.franchiseInBase
+        vflEnabled = defaults.vflEnabled
+        includeCFPReserve = defaults.includeCFPReserve
+        includeCFPInNetGoal = defaults.includeCFPInNetGoal
+        vatDeductibleOnPurchase = defaults.vatDeductibleOnPurchase
+    }
 
     var vatApplicable: Bool {
         !franchiseInBase

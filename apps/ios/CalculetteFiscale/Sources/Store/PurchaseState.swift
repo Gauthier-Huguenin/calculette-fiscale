@@ -61,6 +61,6 @@ enum ProAccessPolicy {
 
 extension CalculationMode {
     var requiresPro: Bool {
-        self != .vat
+        false
     }
 }
