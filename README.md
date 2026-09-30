@@ -32,12 +32,6 @@ docs/
   releases/
 ```
 
-Espaces prevus plus tard :
-
-- `apps/android/` pour une app Android.
-- `apps/macos/` pour une app Mac.
-- `apps/web/` ou `sites/www/` pour le site associe.
-- `packages/` pour du code partage non specifique a une plateforme.
 
 ## App iOS
 
@@ -48,7 +42,7 @@ Espaces prevus plus tard :
 - UI : SwiftUI, interface sombre avec 4 calculettes métier depuis `1.1.0`
 - Cible minimum : iOS 17
 - Version marketing : `1.1.0`
-- Build : `5`
+- Build : `6`
 - Domaine : calculs deterministes dans `Sources/Domain`, constantes fiscales versionnees avec le jeu de regles `fr-2026-v1-2026-05-14`
 - Etat local : `Sources/State`, historique encode en JSON dans `UserDefaults`, limite aux 50 derniers calculs
 - Monetisation : StoreKit 2 dans `Sources/Store`, achat unique non-consommable `pro_lifetime`, fichier local `Resources/CalculetteFiscale.storekit`
@@ -124,7 +118,7 @@ Workflow manuel dans Xcode :
 5. Toucher l'historique ou le detail complet.
 6. Le paywall doit s'ouvrir. Acheter `Calculette Fiscale Pro` via la feuille StoreKit locale.
 7. L'historique et le detail complet doivent se debloquer immediatement.
-7. Pour rejouer le scenario, reinitialiser les transactions StoreKit locales dans Xcode, puis relancer l'app.
+8. Pour rejouer le scenario, reinitialiser les transactions StoreKit locales dans Xcode, puis relancer l'app.
 
 La restauration utilise `AppStore.sync()` uniquement depuis le bouton `Restaurer mes achats`.
 Si le produit StoreKit ne se charge pas, les quatre calculettes de base et la
